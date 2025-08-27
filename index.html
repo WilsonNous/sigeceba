@@ -9,15 +9,16 @@
     <title>Gestão de Cestas Básicas</title>
     <style>
         :root {
-            --primary-color: #4a6da7;
-            --secondary-color: #3a5a8a;
-            --accent-color: #f39c12;
-            --light-color: #f5f5f5;
-            --dark-color: #333;
-            --success-color: #28a745;
-            --danger-color: #dc3545;
-            --warning-color: #ffc107;
-            --info-color: #17a2b8;
+            --vermelho-cruz: #A52A2A;
+            --laranja-titulo: #E85C1F;
+            --cinza-degrade: #8C7C6D;
+            --bege-fundo: #FDF6EB;
+            --bege-claro: #FFFBF5;
+            --amarelo-trigo: #E5C07B;
+            --texto-escuro: #5A4C3F;
+            --texto-medio: #7A6D5F;
+            --sombra-suave: 0 2px 4px rgba(0, 0, 0, 0.05);
+            --sombra-media: 0 4px 8px rgba(0, 0, 0, 0.08);
         }
 
         * {
@@ -28,32 +29,45 @@
         }
 
         body {
-            background-color: #f8f9fa;
-            color: #333;
+            background-color: var(--bege-fundo);
+            color: var(--texto-medio);
             line-height: 1.6;
         }
 
         header {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 1rem;
+            background: var(--bege-claro);
+            padding: 1.5rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: var(--sombra-suave);
+            position: relative;
+            overflow: hidden;
+            border-bottom: 1px solid rgba(165, 42, 42, 0.1);
         }
 
-        #logo {
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
             height: 60px;
+            margin-right: 15px;
         }
 
-        h1 {
+        .header-title {
             font-size: 1.8rem;
-            margin: 0;
+            color: var(--texto-escuro);
+        }
+
+        .header-title span {
+            color: var(--laranja-titulo);
+            font-weight: 600;
         }
 
         main {
-            padding: 1rem;
+            padding: 2rem;
             max-width: 1200px;
             margin: 0 auto;
         }
@@ -64,104 +78,132 @@
 
         /* Menu de navegação */
         nav {
-            background-color: var(--secondary-color);
-            padding: 0.5rem;
-            margin-bottom: 1rem;
-            border-radius: 5px;
+            background: var(--bege-claro);
+            padding: 0.8rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: var(--sombra-suave);
+            border: 1px solid rgba(165, 42, 42, 0.1);
         }
 
         nav ul {
             display: flex;
             list-style: none;
             flex-wrap: wrap;
+            justify-content: center;
         }
 
         nav li {
-            margin-right: 1rem;
+            margin: 0.5rem;
         }
 
         nav button {
-            background: none;
-            border: none;
-            color: white;
-            padding: 0.5rem 1rem;
+            background: transparent;
+            border: 1px solid var(--amarelo-trigo);
+            color: var(--texto-medio);
+            padding: 0.7rem 1.5rem;
             cursor: pointer;
-            border-radius: 3px;
-            transition: background-color 0.3s;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            font-weight: 500;
         }
 
         nav button:hover {
-            background-color: rgba(255, 255, 255, 0.1);
+            background: rgba(165, 42, 42, 0.05);
+            border-color: var(--laranja-titulo);
         }
 
         nav button.active {
-            background-color: var(--accent-color);
+            background: var(--laranja-titulo);
+            color: white;
+            border-color: var(--laranja-titulo);
         }
 
         /* Cards de informações */
         .info-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .info-card {
-            background-color: white;
-            border-radius: 5px;
-            padding: 1rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background: var(--bege-claro);
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: var(--sombra-suave);
+            text-align: center;
+            transition: transform 0.3s ease;
+            border: 1px solid rgba(165, 42, 42, 0.1);
+        }
+
+        .info-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--sombra-media);
         }
 
         .info-card h3 {
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
+            color: var(--texto-medio);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            font-weight: 500;
         }
 
         .info-card p {
-            font-size: 1.5rem;
+            font-size: 2rem;
             font-weight: bold;
-            color: var(--dark-color);
+            color: var(--vermelho-cruz);
         }
 
         /* Formulários */
         .form-section {
-            background-color: white;
-            border-radius: 5px;
-            padding: 1.5rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            margin-bottom: 1.5rem;
+            background: var(--bege-claro);
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: var(--sombra-suave);
+            margin-bottom: 2rem;
+            border: 1px solid rgba(165, 42, 42, 0.1);
         }
 
         .form-section h2 {
-            color: var(--primary-color);
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid #eee;
+            color: var(--vermelho-cruz);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid var(--amarelo-trigo);
         }
 
         .form-group {
-            margin-bottom: 1rem;
+            margin-bottom: 1.2rem;
         }
 
         label {
             display: block;
             margin-bottom: 0.5rem;
-            font-weight: bold;
+            font-weight: 600;
+            color: var(--texto-escuro);
         }
 
         input, select, textarea {
             width: 100%;
-            padding: 0.5rem;
+            padding: 0.8rem;
             border: 1px solid #ddd;
-            border-radius: 4px;
+            border-radius: 5px;
             font-size: 1rem;
+            transition: border-color 0.3s;
+            background: white;
+            color: var(--texto-escuro);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--laranja-titulo);
+            box-shadow: 0 0 0 2px rgba(232, 92, 31, 0.1);
         }
 
         .form-row {
             display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
+            gap: 1.5rem;
+            margin-bottom: 1.2rem;
         }
 
         .form-row .form-group {
@@ -169,123 +211,111 @@
         }
 
         button {
-            padding: 0.5rem 1rem;
+            padding: 0.8rem 1.5rem;
             border: none;
-            border-radius: 4px;
+            border-radius: 5px;
             cursor: pointer;
             font-size: 1rem;
-            transition: background-color 0.3s;
+            font-weight: 600;
+            transition: all 0.3s ease;
         }
 
         .btn-primary {
-            background-color: var(--primary-color);
+            background: var(--laranja-titulo);
             color: white;
         }
 
         .btn-primary:hover {
-            background-color: var(--secondary-color);
+            background: #d35400;
+            box-shadow: var(--sombra-media);
         }
 
         .btn-secondary {
-            background-color: #6c757d;
+            background: var(--texto-medio);
             color: white;
         }
 
         .btn-secondary:hover {
-            background-color: #5a6268;
+            background: var(--texto-escuro);
+            box-shadow: var(--sombra-media);
         }
 
         .btn-success {
-            background-color: var(--success-color);
+            background: #27ae60;
             color: white;
         }
 
         .btn-success:hover {
-            background-color: #218838;
-        }
-
-        .btn-danger {
-            background-color: var(--danger-color);
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background-color: #c82333;
+            background: #219653;
+            box-shadow: var(--sombra-media);
         }
 
         /* Tabelas */
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+            box-shadow: var(--sombra-suave);
+            border: 1px solid rgba(165, 42, 42, 0.1);
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 1rem;
-            background-color: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            background: var(--bege-claro);
         }
 
         th, td {
-            padding: 0.75rem;
+            padding: 1rem;
             text-align: left;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid rgba(165, 42, 42, 0.1);
         }
 
         th {
-            background-color: var(--primary-color);
-            color: white;
+            background: var(--bege-fundo);
+            color: var(--texto-escuro);
+            font-weight: 600;
         }
 
         tr:hover {
-            background-color: #f5f5f5;
-        }
-
-        .table-container {
-            overflow-x: auto;
-        }
-
-        /* Mensagens de alerta */
-        .alert {
-            padding: 0.75rem 1.25rem;
-            margin-bottom: 1rem;
-            border: 1px solid transparent;
-            border-radius: 0.25rem;
-        }
-
-        .alert-success {
-            color: #155724;
-            background-color: #d4edda;
-            border-color: #c3e6cb;
-        }
-
-        .alert-danger {
-            color: #721c24;
-            background-color: #f8d7da;
-            border-color: #f5c6cb;
+            background-color: rgba(229, 192, 123, 0.1);
         }
 
         /* Tabs para membros da família */
         .members-tabs {
-            margin-top: 1rem;
+            margin-top: 1.5rem;
+            border: 1px solid rgba(165, 42, 42, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
         }
 
         .tab-header {
             display: flex;
-            border-bottom: 1px solid #ddd;
+            background: var(--bege-fundo);
         }
 
         .tab-btn {
-            padding: 0.5rem 1rem;
+            padding: 1rem 1.5rem;
             background: none;
             border: none;
             cursor: pointer;
-            border-bottom: 2px solid transparent;
+            color: var(--texto-medio);
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .tab-btn:hover {
+            background: rgba(165, 42, 42, 0.05);
         }
 
         .tab-btn.active {
-            border-bottom: 2px solid var(--primary-color);
-            color: var(--primary-color);
+            background: var(--laranja-titulo);
+            color: white;
         }
 
         .tab-content {
-            padding: 1rem 0;
+            padding: 1.5rem;
+            background: var(--bege-claro);
         }
 
         .tab-pane {
@@ -298,10 +328,12 @@
 
         footer {
             text-align: center;
-            padding: 1rem;
+            padding: 1.5rem;
             margin-top: 2rem;
-            background-color: var(--dark-color);
-            color: white;
+            background: var(--bege-claro);
+            color: var(--texto-medio);
+            box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+            border-top: 1px solid rgba(165, 42, 42, 0.1);
         }
 
         /* Responsividade */
@@ -317,6 +349,10 @@
             
             nav li {
                 margin-bottom: 0.5rem;
+            }
+            
+            .header-title {
+                font-size: 1.4rem;
             }
         }
     </style>
@@ -345,19 +381,19 @@
         <div class="info-cards">
             <div class="info-card">
                 <h3>Famílias Cadastradas</h3>
-                <p id="totalFamilias">0</p>
+                <p id="totalFamilias">24</p>
             </div>
             <div class="info-card">
                 <h3>Cestas Entregues (Mês)</h3>
-                <p id="cestasMes">0</p>
+                <p id="cestasMes">18</p>
             </div>
             <div class="info-card">
                 <h3>Pessoas Beneficiadas</h3>
-                <p id="totalPessoas">0</p>
+                <p id="totalPessoas">97</p>
             </div>
             <div class="info-card">
                 <h3>Cestas em Estoque</h3>
-                <p id="cestasEstoque">0</p>
+                <p id="cestasEstoque">12</p>
             </div>
         </div>
 
@@ -373,7 +409,24 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Dados serão preenchidos via JavaScript -->
+                    <tr>
+                        <td>15/03/2023</td>
+                        <td>Silva Santos</td>
+                        <td>Maria Silva</td>
+                        <td>1</td>
+                    </tr>
+                    <tr>
+                        <td>12/03/2023</td>
+                        <td>Oliveira Costa</td>
+                        <td>José Oliveira</td>
+                        <td>2</td>
+                    </tr>
+                    <tr>
+                        <td>08/03/2023</td>
+                        <td>Pereira Almeida</td>
+                        <td>Ana Pereira</td>
+                        <td>1</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -415,63 +468,6 @@
                 </div>
             </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="responsavelEstadoCivil">Estado Civil *</label>
-                    <select id="responsavelEstadoCivil" name="responsavelEstadoCivil" required>
-                        <option value="">Selecione</option>
-                        <option value="solteiro">Solteiro(a)</option>
-                        <option value="casado">Casado(a)</option>
-                        <option value="divorciado">Divorciado(a)</option>
-                        <option value="viuvo">Viúvo(a)</option>
-                        <option value="uniaoestavel">União Estável</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="responsavelNaturalidade">Naturalidade (Cidade/Estado)</label>
-                    <input type="text" id="responsavelNaturalidade" name="responsavelNaturalidade">
-                </div>
-                <div class="form-group">
-                    <label for="responsavelNacionalidade">Nacionalidade</label>
-                    <input type="text" id="responsavelNacionalidade" name="responsavelNacionalidade" value="Brasileira">
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="responsavelRG">RG / Órgão Emissor</label>
-                    <input type="text" id="responsavelRG" name="responsavelRG">
-                </div>
-                <div class="form-group">
-                    <label for="responsavelEscolaridade">Escolaridade</label>
-                    <select id="responsavelEscolaridade" name="responsavelEscolaridade">
-                        <option value="">Selecione</option>
-                        <option value="fundamental_incompleto">Fundamental Incompleto</option>
-                        <option value="fundamental_completo">Fundamental Completo</option>
-                        <option value="medio_incompleto">Médio Incompleto</option>
-                        <option value="medio_completo">Médio Completo</option>
-                        <option value="superior_incompleto">Superior Incompleto</option>
-                        <option value="superior_completo">Superior Completo</option>
-                        <option value="pos_graduacao">Pós-graduação</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="responsavelProfissao">Profissão/Ocupação</label>
-                    <input type="text" id="responsavelProfissao" name="responsavelProfissao">
-                </div>
-                <div class="form-group">
-                    <label for="responsavelTelefone">Telefone *</label>
-                    <input type="tel" id="responsavelTelefone" name="responsavelTelefone" required>
-                </div>
-                <div class="form-group">
-                    <label for="responsavelEmail">E-mail</label>
-                    <input type="email" id="responsavelEmail" name="responsavelEmail">
-                </div>
-            </div>
-
             <div class="form-group">
                 <label for="responsavelEndereco">Endereço (Rua/Av., Nº, Bairro, Cidade, CEP) *</label>
                 <textarea id="responsavelEndereco" name="responsavelEndereco" rows="2" required></textarea>
@@ -489,97 +485,7 @@
                 </div>
             </div>
 
-            <div class="members-tabs">
-                <div class="tab-header">
-                    <button type="button" class="tab-btn active" onclick="openTab(event, 'membros')">Membros da Família</button>
-                    <button type="button" class="tab-btn" onclick="openTab(event, 'socioeconomica')">Situação Socioeconômica</button>
-                    <button type="button" class="tab-btn" onclick="openTab(event, 'observacoes')">Observações</button>
-                </div>
-
-                <div class="tab-content">
-                    <div id="membros" class="tab-pane active">
-                        <div id="membrosFamilia">
-                            <div class="membro-item">
-                                <h4>Responsável</h4>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label>Nome</label>
-                                        <input type="text" name="membroNome[]" value="" readonly>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Idade</label>
-                                        <input type="number" name="membroIdade[]" readonly>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Escolaridade</label>
-                                        <input type="text" name="membroEscolaridade[]" readonly>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>Estuda?</label>
-                                        <select name="membroEstuda[]" disabled>
-                                            <option value="nao">Não</option>
-                                            <option value="sim">Sim</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <button type="button" class="btn-secondary" onclick="adicionarMembro()">+ Adicionar Membro</button>
-                    </div>
-
-                    <div id="socioeconomica" class="tab-pane">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="rendaResponsavel">Renda mensal do responsável (R$)</label>
-                                <input type="number" id="rendaResponsavel" name="rendaResponsavel" step="0.01" min="0">
-                            </div>
-                            <div class="form-group">
-                                <label for="rendaFamiliar">Renda mensal total da família (R$)</label>
-                                <input type="number" id="rendaFamiliar" name="rendaFamiliar" step="0.01" min="0">
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="beneficios">Benefícios sociais recebidos</label>
-                            <textarea id="beneficios" name="beneficios" rows="2" placeholder="Ex: Bolsa Família, Auxílio Brasil, BPC, etc."></textarea>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="condicaoMoradia">Condição da moradia</label>
-                                <select id="condicaoMoradia" name="condicaoMoradia">
-                                    <option value="">Selecione</option>
-                                    <option value="propria">Própria</option>
-                                    <option value="alugada">Alugada</option>
-                                    <option value="cedida">Cedida</option>
-                                    <option value="invasao">Invasão</option>
-                                    <option value="outra">Outra</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="tipoMoradia">Tipo de moradia</label>
-                                <select id="tipoMoradia" name="tipoMoradia">
-                                    <option value="">Selecione</option>
-                                    <option value="casa">Casa</option>
-                                    <option value="apartamento">Apartamento</option>
-                                    <option value="comodo">Cômodo</option>
-                                    <option value="barraco">Barraco</option>
-                                    <option value="outro">Outro</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="observacoes" class="tab-pane">
-                        <div class="form-group">
-                            <label for="observacoesNecessidades">Observações / Necessidades Específicas</label>
-                            <textarea id="observacoesNecessidades" name="observacoesNecessidades" rows="4"></textarea>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group" style="margin-top: 1rem;">
+            <div class="form-group">
                 <button type="submit" class="btn-primary">Salvar Cadastro</button>
                 <button type="button" class="btn-secondary" onclick="limparFormulario()">Limpar</button>
             </div>
@@ -595,7 +501,9 @@
                     <label for="familiaEntrega">Família *</label>
                     <select id="familiaEntrega" name="familiaEntrega" required>
                         <option value="">Selecione uma família</option>
-                        <!-- Opções preenchidas via JavaScript -->
+                        <option value="1">Silva Santos (Maria Silva)</option>
+                        <option value="2">Oliveira Costa (José Oliveira)</option>
+                        <option value="3">Pereira Almeida (Ana Pereira)</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -613,11 +521,6 @@
                     <label for="responsavelEntrega">Responsável pela Entrega *</label>
                     <input type="text" id="responsavelEntrega" name="responsavelEntrega" required>
                 </div>
-            </div>
-
-            <div class="form-group">
-                <label for="observacoesEntrega">Observações da Entrega</label>
-                <textarea id="observacoesEntrega" name="observacoesEntrega" rows="3"></textarea>
             </div>
 
             <div class="form-group">
@@ -652,7 +555,28 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Dados preenchidos via JavaScript -->
+                    <tr>
+                        <td>Maria Silva</td>
+                        <td>123.456.789-00</td>
+                        <td>(48) 99999-9999</td>
+                        <td>4</td>
+                        <td>15/03/2023</td>
+                        <td>
+                            <button class="btn-primary">Editar</button>
+                            <button class="btn-secondary">Detalhes</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>José Oliveira</td>
+                        <td>987.654.321-00</td>
+                        <td>(48) 98888-8888</td>
+                        <td>3</td>
+                        <td>12/03/2023</td>
+                        <td>
+                            <button class="btn-primary">Editar</button>
+                            <button class="btn-secondary">Detalhes</button>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -674,7 +598,9 @@
                 <label for="familiaFiltro">Família</label>
                 <select id="familiaFiltro" name="familiaFiltro">
                     <option value="">Todas as famílias</option>
-                    <!-- Opções preenchidas via JavaScript -->
+                    <option value="1">Silva Santos</option>
+                    <option value="2">Oliveira Costa</option>
+                    <option value="3">Pereira Almeida</option>
                 </select>
             </div>
             <div class="form-group">
@@ -694,7 +620,27 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Dados preenchidos via JavaScript -->
+                    <tr>
+                        <td>15/03/2023</td>
+                        <td>Silva Santos</td>
+                        <td>Maria Silva</td>
+                        <td>1</td>
+                        <td>João Entregador</td>
+                    </tr>
+                    <tr>
+                        <td>12/03/2023</td>
+                        <td>Oliveira Costa</td>
+                        <td>José Oliveira</td>
+                        <td>2</td>
+                        <td>Maria Entregadora</td>
+                    </tr>
+                    <tr>
+                        <td>08/03/2023</td>
+                        <td>Pereira Almeida</td>
+                        <td>Ana Pereira</td>
+                        <td>1</td>
+                        <td>João Entregador</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -706,27 +652,6 @@
 </footer>
 
 <script>
-    // Variáveis globais
-    let familias = [];
-    let entregas = [];
-    let currentSection = 'dashboard';
-
-    // Inicialização quando o DOM estiver carregado
-    document.addEventListener('DOMContentLoaded', function() {
-        // Configurar data atual para o campo de entrega
-        document.getElementById('dataEntrega').valueAsDate = new Date();
-        
-        // Calcular idade quando a data de nascimento for alterada
-        document.getElementById('responsavelNascimento').addEventListener('change', calcularIdade);
-        
-        // Carregar dados iniciais
-        carregarDadosIniciais();
-        
-        // Configurar formulários
-        document.getElementById('familiaForm').addEventListener('submit', salvarFamilia);
-        document.getElementById('entregaForm').addEventListener('submit', registrarEntrega);
-    });
-
     // Função para mostrar/ocultar seções
     function showSection(sectionId) {
         // Oculta todas as seções
@@ -742,43 +667,11 @@
         // Mostra a seção solicitada e atualiza o botão de navegação
         document.getElementById(sectionId).classList.remove('hidden');
         document.getElementById('nav' + sectionId.charAt(0).toUpperCase() + sectionId.slice(1)).classList.add('active');
-        
-        // Atualiza a seção atual
-        currentSection = sectionId;
-        
-        // Se for a seção de entregas ou histórico, carrega as famílias
-        if (sectionId === 'entregas' || sectionId === 'historico') {
-            carregarSelectFamilias();
-        }
-        
-        // Se for a seção de consulta, carrega as famílias
-        if (sectionId === 'consulta') {
-            buscarFamilias();
-        }
-        
-        // Se for a seção de histórico, carrega as entregas
-        if (sectionId === 'historico') {
-            filtrarEntregas();
-        }
-    }
-
-    // Função para abrir abas
-    function openTab(evt, tabId) {
-        // Remove a classe active de todos os botões e conteúdos
-        const tabButtons = evt.currentTarget.parentElement.querySelectorAll('.tab-btn');
-        const tabPanes = evt.currentTarget.parentElement.parentElement.querySelectorAll('.tab-pane');
-        
-        tabButtons.forEach(button => button.classList.remove('active'));
-        tabPanes.forEach(pane => pane.classList.remove('active'));
-        
-        // Adiciona a classe active ao botão clicado e ao conteúdo correspondente
-        evt.currentTarget.classList.add('active');
-        document.getElementById(tabId).classList.add('active');
     }
 
     // Função para calcular idade a partir da data de nascimento
-    function calcularIdade() {
-        const nascimento = new Date(document.getElementById('responsavelNascimento').value);
+    document.getElementById('responsavelNascimento').addEventListener('change', function() {
+        const nascimento = new Date(this.value);
         const hoje = new Date();
         let idade = hoje.getFullYear() - nascimento.getFullYear();
         const mes = hoje.getMonth() - nascimento.getMonth();
@@ -788,230 +681,44 @@
         }
         
         document.getElementById('responsavelIdade').value = idade;
-    }
-
-    // Função para adicionar membro da família
-    function adicionarMembro() {
-        const container = document.getElementById('membrosFamilia');
-        const novoMembro = document.createElement('div');
-        novoMembro.className = 'membro-item';
-        novoMembro.innerHTML = `
-            <h4>Membro da Família</h4>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Nome *</label>
-                    <input type="text" name="membroNome[]" required>
-                </div>
-                <div class="form-group">
-                    <label>Idade *</label>
-                    <input type="number" name="membroIdade[]" min="0" required>
-                </div>
-                <div class="form-group">
-                    <label>Escolaridade</label>
-                    <select name="membroEscolaridade[]">
-                        <option value="">Selecione</option>
-                        <option value="fundamental_incompleto">Fundamental Incompleto</option>
-                        <option value="fundamental_completo">Fundamental Completo</option>
-                        <option value="medio_incompleto">Médio Incompleto</option>
-                        <option value="medio_completo">Médio Completo</option>
-                        <option value="superior_incompleto">Superior Incompleto</option>
-                        <option value="superior_completo">Superior Completo</option>
-                        <option value="pos_graduacao">Pós-graduação</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Estuda?</label>
-                    <select name="membroEstuda[]">
-                        <option value="nao">Não</option>
-                        <option value="sim">Sim</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>&nbsp;</label>
-                    <button type="button" class="btn-danger" onclick="removerMembro(this)">Remover</button>
-                </div>
-            </div>
-        `;
-        container.appendChild(novoMembro);
-    }
-
-    // Função para remover membro da família
-    function removerMembro(botao) {
-        const membroItem = botao.closest('.membro-item');
-        if (document.querySelectorAll('.membro-item').length > 1) {
-            membroItem.remove();
-        } else {
-            alert('É necessário ter pelo menos um membro na família.');
-        }
-    }
+    });
 
     // Função para limpar formulário
     function limparFormulario() {
         if (confirm('Tem certeza que deseja limpar o formulário? Todos os dados não salvos serão perdidos.')) {
             document.getElementById('familiaForm').reset();
-            // Remove todos os membros adicionados, exceto o primeiro (responsável)
-            const membros = document.querySelectorAll('.membro-item');
-            for (let i = 1; i < membros.length; i++) {
-                membros[i].remove();
-            }
         }
     }
 
-    // Função para carregar dados iniciais
-    function carregarDadosIniciais() {
-        // Simulação de carregamento de dados do servidor
-        setTimeout(() => {
-            // Dados simulados para o dashboard
-            document.getElementById('totalFamilias').textContent = '24';
-            document.getElementById('cestasMes').textContent = '18';
-            document.getElementById('totalPessoas').textContent = '97';
-            document.getElementById('cestasEstoque').textContent = '12';
-            
-            // Simular últimas entregas
-            const ultimasEntregas = [
-                { data: '15/03/2023', familia: 'Silva Santos', responsavel: 'Maria Silva', quantidade: 1 },
-                { data: '12/03/2023', familia: 'Oliveira Costa', responsavel: 'José Oliveira', quantidade: 2 },
-                { data: '08/03/2023', familia: 'Pereira Almeida', responsavel: 'Ana Pereira', quantidade: 1 },
-                { data: '05/03/2023', familia: 'Rodrigues Martins', responsavel: 'Carlos Rodrigues', quantidade: 1 },
-                { data: '01/03/2023', familia: 'Ferreira Lima', responsavel: 'Paula Ferreira', quantidade: 1 }
-            ];
-            
-            const tbody = document.querySelector('#ultimasEntregas tbody');
-            tbody.innerHTML = '';
-            ultimasEntregas.forEach(entrega => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${entrega.data}</td>
-                    <td>${entrega.familia}</td>
-                    <td>${entrega.responsavel}</td>
-                    <td>${entrega.quantidade}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }, 500);
-    }
+    // Configurar data atual para o campo de entrega
+    document.getElementById('dataEntrega').valueAsDate = new Date();
 
-    // Função para carregar select de famílias
-    function carregarSelectFamilias() {
-        // Simulação de carregamento de famílias do servidor
-        const familiasSelect = document.getElementById('familiaEntrega');
-        const familiasFiltro = document.getElementById('familiaFiltro');
-        
-        // Limpar selects
-        familiasSelect.innerHTML = '<option value="">Selecione uma família</option>';
-        familiasFiltro.innerHTML = '<option value="">Todas as famílias</option>';
-        
-        // Dados simulados
-        const familiasSimuladas = [
-            { id: 1, nome: 'Silva Santos', responsavel: 'Maria Silva' },
-            { id: 2, nome: 'Oliveira Costa', responsavel: 'José Oliveira' },
-            { id: 3, nome: 'Pereira Almeida', responsavel: 'Ana Pereira' },
-            { id: 4, nome: 'Rodrigues Martins', responsavel: 'Carlos Rodrigues' },
-            { id: 5, nome: 'Ferreira Lima', responsavel: 'Paula Ferreira' }
-        ];
-        
-        // Adicionar opções aos selects
-        familiasSimuladas.forEach(familia => {
-            const option = document.createElement('option');
-            option.value = familia.id;
-            option.textContent = `${familia.nome} (${familia.responsavel})`;
-            
-            familiasSelect.appendChild(option.cloneNode(true));
-            familiasFiltro.appendChild(option.cloneNode(true));
-        });
-    }
-
-    // Função para salvar família
-    function salvarFamilia(event) {
-        event.preventDefault();
-        
-        // Simulação de salvamento
+    // Simulação de funcionalidades
+    document.getElementById('familiaForm').addEventListener('submit', function(e) {
+        e.preventDefault();
         alert('Cadastro salvo com sucesso!');
-        document.getElementById('familiaForm').reset();
-        
-        // Voltar para o dashboard
+        this.reset();
         showSection('dashboard');
-    }
+    });
 
-    // Função para registrar entrega
-    function registrarEntrega(event) {
-        event.preventDefault();
-        
-        // Simulação de registro
+    document.getElementById('entregaForm').addEventListener('submit', function(e) {
+        e.preventDefault();
         alert('Entrega registrada com sucesso!');
-        document.getElementById('entregaForm').reset();
+        this.reset();
         document.getElementById('dataEntrega').valueAsDate = new Date();
-        
-        // Voltar para o dashboard
         showSection('dashboard');
-    }
+    });
 
-    // Função para buscar famílias
     function buscarFamilias() {
-        const termo = document.getElementById('buscaFamilia').value.toLowerCase();
-        
-        // Simulação de busca
-        const familiasSimuladas = [
-            { responsavel: 'Maria Silva', cpf: '123.456.789-00', telefone: '(48) 99999-9999', membros: 4, ultimaEntrega: '15/03/2023' },
-            { responsavel: 'José Oliveira', cpf: '987.654.321-00', telefone: '(48) 98888-8888', membros: 3, ultimaEntrega: '12/03/2023' },
-            { responsavel: 'Ana Pereira', cpf: '456.789.123-00', telefone: '(48) 97777-7777', membros: 5, ultimaEntrega: '08/03/2023' },
-            { responsavel: 'Carlos Rodrigues', cpf: '321.654.987-00', telefone: '(48) 96666-6666', membros: 2, ultimaEntrega: '05/03/2023' },
-            { responsavel: 'Paula Ferreira', cpf: '789.123.456-00', telefone: '(48) 95555-5555', membros: 6, ultimaEntrega: '01/03/2023' }
-        ];
-        
-        const tbody = document.querySelector('#tabelaFamilias tbody');
-        tbody.innerHTML = '';
-        
-        familiasSimuladas.forEach(familia => {
-            if (!termo || familia.responsavel.toLowerCase().includes(termo) || familia.cpf.includes(termo)) {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${familia.responsavel}</td>
-                    <td>${familia.cpf}</td>
-                    <td>${familia.telefone}</td>
-                    <td>${familia.membros}</td>
-                    <td>${familia.ultimaEntrega}</td>
-                    <td>
-                        <button class="btn-primary">Editar</button>
-                        <button class="btn-danger">Excluir</button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            }
-        });
+        alert('Funcionalidade de busca seria implementada aqui!');
     }
 
-    // Função para limpar busca
     function limparBusca() {
         document.getElementById('buscaFamilia').value = '';
-        buscarFamilias();
     }
 
-    // Função para filtrar entregas
     function filtrarEntregas() {
-        // Simulação de filtro
-        const entregasSimuladas = [
-            { data: '15/03/2023', familia: 'Silva Santos', responsavel: 'Maria Silva', quantidade: 1, entreguePor: 'João Entregador' },
-            { data: '12/03/2023', familia: 'Oliveira Costa', responsavel: 'José Oliveira', quantidade: 2, entreguePor: 'Maria Entregadora' },
-            { data: '08/03/2023', familia: 'Pereira Almeida', responsavel: 'Ana Pereira', quantidade: 1, entreguePor: 'João Entregador' },
-            { data: '05/03/2023', familia: 'Rodrigues Martins', responsavel: 'Carlos Rodrigues', quantidade: 1, entreguePor: 'Pedro Entregador' },
-            { data: '01/03/2023', familia: 'Ferreira Lima', responsavel: 'Paula Ferreira', quantidade: 1, entreguePor: 'Maria Entregadora' }
-        ];
-        
-        const tbody = document.querySelector('#tabelaEntregas tbody');
-        tbody.innerHTML = '';
-        
-        entregasSimuladas.forEach(entrega => {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                <td>${entrega.data}</td>
-                <td>${entrega.familia}</td>
-                <td>${entrega.responsavel}</td>
-                <td>${entrega.quantidade}</td>
-                <td>${entrega.entreguePor}</td>
-            `;
-            tbody.appendChild(tr);
-        });
+        alert('Funcionalidade de filtro seria implementada aqui!');
     }
 </script>
 </body>
