@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema de Gestão de Cestas Básicas - Igreja Mais de Cristo">
+    <meta name="keywords" content="igreja, cestas básicas, cadastro, gestão">
+    <meta name="author" content="Igreja Mais de Cristo">
+    <title>Gestão de Cestas Básicas</title>
+    <style>
+        :root {
+            --primary-color: #4a6da7;
+            --secondary-color: #3a5a8a;
+            --accent-color: #f39c12;
+            --light-color: #f5f5f5;
+            --dark-color: #333;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        #logo {
+            height: 60px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin: 0;
+        }
+
+        main {
+            padding: 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Menu de navegação */
+        nav {
+            background-color: var(--secondary-color);
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border-radius: 5px;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+
+        nav li {
+            margin-right: 1rem;
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: background-color 0.3s;
+        }
+
+        nav button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        nav button.active {
+            background-color: var(--accent-color);
+        }
+
+        /* Cards de informações */
+        .info-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-card {
+            background-color: white;
+            border-radius: 5px;
+            padding: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .info-card h3 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .info-card p {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--dark-color);
+        }
+
+        /* Formulários */
+        .form-section {
+            background-color: white;
+            border-radius: 5px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .form-section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        /* Tabelas */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        /* Mensagens de alerta */
+        .alert {
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+            border-radius: 0.25rem;
+        }
+
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+
+        /* Tabs para membros da família */
+        .members-tabs {
+            margin-top: 1rem;
+        }
+
+        .tab-header {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .tab-btn {
+            padding: 0.5rem 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-btn.active {
+            border-bottom: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .tab-content {
+            padding: 1rem 0;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1rem;
+            margin-top: 2rem;
+            background-color: var(--dark-color);
+            color: white;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            nav ul {
+                flex-direction: column;
+            }
+            
+            nav li {
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<header>
+    <img src="/static/logo_maisdecristo_b2.png" alt="Logo Igreja Mais de Cristo" id="logo">
+    <h1>Gestão de Cestas Básicas</h1>
+</header>
+
+<main id="mainContent">
+    <!-- Menu de Navegação -->
+    <nav>
+        <ul>
+            <li><button id="navDashboard" class="active" onclick="showSection('dashboard')">Dashboard</button></li>
+            <li><button id="navCadastro" onclick="showSection('cadastro')">Cadastrar Família</button></li>
+            <li><button id="navEntregas" onclick="showSection('entregas')">Registrar Entrega</button></li>
+            <li><button id="navConsulta" onclick="showSection('consulta')">Consultar Famílias</button></li>
+            <li><button id="navHistorico" onclick="showSection('historico')">Histórico de Entregas</button></li>
+        </ul>
+    </nav>
+
+    <!-- Dashboard -->
+    <section id="dashboard" class="form-section">
+        <h2>Dashboard - Cestas Básicas</h2>
+        <div class="info-cards">
+            <div class="info-card">
+                <h3>Famílias Cadastradas</h3>
+                <p id="totalFamilias">0</p>
+            </div>
+            <div class="info-card">
+                <h3>Cestas Entregues (Mês)</h3>
+                <p id="cestasMes">0</p>
+            </div>
+            <div class="info-card">
+                <h3>Pessoas Beneficiadas</h3>
+                <p id="totalPessoas">0</p>
+            </div>
+            <div class="info-card">
+                <h3>Cestas em Estoque</h3>
+                <p id="cestasEstoque">0</p>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <h3>Últimas Entregas</h3>
+            <table id="ultimasEntregas">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Família</th>
+                        <th>Responsável</th>
+                        <th>Quantidade</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dados serão preenchidos via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Cadastro de Família -->
+    <section id="cadastro" class="form-section hidden">
+        <h2>Cadastro de Família para Cesta Básica</h2>
+        <form id="familiaForm">
+            <h3>Dados do Responsável</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="responsavelNome">Nome Completo *</label>
+                    <input type="text" id="responsavelNome" name="responsavelNome" required>
+                </div>
+                <div class="form-group">
+                    <label for="responsavelCPF">CPF *</label>
+                    <input type="text" id="responsavelCPF" name="responsavelCPF" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="responsavelNascimento">Data de Nascimento *</label>
+                    <input type="date" id="responsavelNascimento" name="responsavelNascimento" required>
+                </div>
+                <div class="form-group">
+                    <label for="responsavelIdade">Idade</label>
+                    <input type="number" id="responsavelIdade" name="responsavelIdade" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="responsavelGenero">Gênero *</label>
+                    <select id="responsavelGenero" name="responsavelGenero" required>
+                        <option value="">Selecione</option>
+                        <option value="masculino">Masculino</option>
+                        <option value="feminino">Feminino</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="responsavelEstadoCivil">Estado Civil *</label>
+                    <select id="responsavelEstadoCivil" name="responsavelEstadoCivil" required>
+                        <option value="">Selecione</option>
+                        <option value="solteiro">Solteiro(a)</option>
+                        <option value="casado">Casado(a)</option>
+                        <option value="divorciado">Divorciado(a)</option>
+                        <option value="viuvo">Viúvo(a)</option>
+                        <option value="uniaoestavel">União Estável</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="responsavelNaturalidade">Naturalidade (Cidade/Estado)</label>
+                    <input type="text" id="responsavelNaturalidade" name="responsavelNaturalidade">
+                </div>
+                <div class="form-group">
+                    <label for="responsavelNacionalidade">Nacionalidade</label>
+                    <input type="text" id="responsavelNacionalidade" name="responsavelNacionalidade" value="Brasileira">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="responsavelRG">RG / Órgão Emissor</label>
+                    <input type="text" id="responsavelRG" name="responsavelRG">
+                </div>
+                <div class="form-group">
+                    <label for="responsavelEscolaridade">Escolaridade</label>
+                    <select id="responsavelEscolaridade" name="responsavelEscolaridade">
+                        <option value="">Selecione</option>
+                        <option value="fundamental_incompleto">Fundamental Incompleto</option>
+                        <option value="fundamental_completo">Fundamental Completo</option>
+                        <option value="medio_incompleto">Médio Incompleto</option>
+                        <option value="medio_completo">Médio Completo</option>
+                        <option value="superior_incompleto">Superior Incompleto</option>
+                        <option value="superior_completo">Superior Completo</option>
+                        <option value="pos_graduacao">Pós-graduação</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="responsavelProfissao">Profissão/Ocupação</label>
+                    <input type="text" id="responsavelProfissao" name="responsavelProfissao">
+                </div>
+                <div class="form-group">
+                    <label for="responsavelTelefone">Telefone *</label>
+                    <input type="tel" id="responsavelTelefone" name="responsavelTelefone" required>
+                </div>
+                <div class="form-group">
+                    <label for="responsavelEmail">E-mail</label>
+                    <input type="email" id="responsavelEmail" name="responsavelEmail">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="responsavelEndereco">Endereço (Rua/Av., Nº, Bairro, Cidade, CEP) *</label>
+                <textarea id="responsavelEndereco" name="responsavelEndereco" rows="2" required></textarea>
+            </div>
+
+            <h3>Informações da Família</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="numeroPessoas">Número de pessoas na casa *</label>
+                    <input type="number" id="numeroPessoas" name="numeroPessoas" min="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="numeroFilhos">Número de filhos</label>
+                    <input type="number" id="numeroFilhos" name="numeroFilhos" min="0" value="0">
+                </div>
+            </div>
+
+            <div class="members-tabs">
+                <div class="tab-header">
+                    <button type="button" class="tab-btn active" onclick="openTab(event, 'membros')">Membros da Família</button>
+                    <button type="button" class="tab-btn" onclick="openTab(event, 'socioeconomica')">Situação Socioeconômica</button>
+                    <button type="button" class="tab-btn" onclick="openTab(event, 'observacoes')">Observações</button>
+                </div>
+
+                <div class="tab-content">
+                    <div id="membros" class="tab-pane active">
+                        <div id="membrosFamilia">
+                            <div class="membro-item">
+                                <h4>Responsável</h4>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Nome</label>
+                                        <input type="text" name="membroNome[]" value="" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Idade</label>
+                                        <input type="number" name="membroIdade[]" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Escolaridade</label>
+                                        <input type="text" name="membroEscolaridade[]" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Estuda?</label>
+                                        <select name="membroEstuda[]" disabled>
+                                            <option value="nao">Não</option>
+                                            <option value="sim">Sim</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-secondary" onclick="adicionarMembro()">+ Adicionar Membro</button>
+                    </div>
+
+                    <div id="socioeconomica" class="tab-pane">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="rendaResponsavel">Renda mensal do responsável (R$)</label>
+                                <input type="number" id="rendaResponsavel" name="rendaResponsavel" step="0.01" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="rendaFamiliar">Renda mensal total da família (R$)</label>
+                                <input type="number" id="rendaFamiliar" name="rendaFamiliar" step="0.01" min="0">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="beneficios">Benefícios sociais recebidos</label>
+                            <textarea id="beneficios" name="beneficios" rows="2" placeholder="Ex: Bolsa Família, Auxílio Brasil, BPC, etc."></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="condicaoMoradia">Condição da moradia</label>
+                                <select id="condicaoMoradia" name="condicaoMoradia">
+                                    <option value="">Selecione</option>
+                                    <option value="propria">Própria</option>
+                                    <option value="alugada">Alugada</option>
+                                    <option value="cedida">Cedida</option>
+                                    <option value="invasao">Invasão</option>
+                                    <option value="outra">Outra</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="tipoMoradia">Tipo de moradia</label>
+                                <select id="tipoMoradia" name="tipoMoradia">
+                                    <option value="">Selecione</option>
+                                    <option value="casa">Casa</option>
+                                    <option value="apartamento">Apartamento</option>
+                                    <option value="comodo">Cômodo</option>
+                                    <option value="barraco">Barraco</option>
+                                    <option value="outro">Outro</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="observacoes" class="tab-pane">
+                        <div class="form-group">
+                            <label for="observacoesNecessidades">Observações / Necessidades Específicas</label>
+                            <textarea id="observacoesNecessidades" name="observacoesNecessidades" rows="4"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 1rem;">
+                <button type="submit" class="btn-primary">Salvar Cadastro</button>
+                <button type="button" class="btn-secondary" onclick="limparFormulario()">Limpar</button>
+            </div>
+        </form>
+    </section>
+
+    <!-- Registrar Entrega -->
+    <section id="entregas" class="form-section hidden">
+        <h2>Registrar Entrega de Cesta Básica</h2>
+        <form id="entregaForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="familiaEntrega">Família *</label>
+                    <select id="familiaEntrega" name="familiaEntrega" required>
+                        <option value="">Selecione uma família</option>
+                        <!-- Opções preenchidas via JavaScript -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="dataEntrega">Data de Entrega *</label>
+                    <input type="date" id="dataEntrega" name="dataEntrega" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="quantidadeCestas">Quantidade de Cestas *</label>
+                    <input type="number" id="quantidadeCestas" name="quantidadeCestas" min="1" value="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="responsavelEntrega">Responsável pela Entrega *</label>
+                    <input type="text" id="responsavelEntrega" name="responsavelEntrega" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="observacoesEntrega">Observações da Entrega</label>
+                <textarea id="observacoesEntrega" name="observacoesEntrega" rows="3"></textarea>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn-success">Registrar Entrega</button>
+            </div>
+        </form>
+    </section>
+
+    <!-- Consultar Famílias -->
+    <section id="consulta" class="form-section hidden">
+        <h2>Consultar Famílias Cadastradas</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <input type="text" id="buscaFamilia" placeholder="Buscar por nome do responsável ou CPF">
+            </div>
+            <div class="form-group">
+                <button type="button" class="btn-primary" onclick="buscarFamilias()">Buscar</button>
+                <button type="button" class="btn-secondary" onclick="limparBusca()">Limpar</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="tabelaFamilias">
+                <thead>
+                    <tr>
+                        <th>Responsável</th>
+                        <th>CPF</th>
+                        <th>Telefone</th>
+                        <th>Membros</th>
+                        <th>Última Entrega</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dados preenchidos via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Histórico de Entregas -->
+    <section id="historico" class="form-section hidden">
+        <h2>Histórico de Entregas</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="dataInicio">Data Início</label>
+                <input type="date" id="dataInicio" name="dataInicio">
+            </div>
+            <div class="form-group">
+                <label for="dataFim">Data Fim</label>
+                <input type="date" id="dataFim" name="dataFim">
+            </div>
+            <div class="form-group">
+                <label for="familiaFiltro">Família</label>
+                <select id="familiaFiltro" name="familiaFiltro">
+                    <option value="">Todas as famílias</option>
+                    <!-- Opções preenchidas via JavaScript -->
+                </select>
+            </div>
+            <div class="form-group">
+                <button type="button" class="btn-primary" style="margin-top: 1.8rem;" onclick="filtrarEntregas()">Filtrar</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="tabelaEntregas">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Família</th>
+                        <th>Responsável</th>
+                        <th>Quantidade</th>
+                        <th>Entregue por</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Dados preenchidos via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <p>© 2025 Nous Tecnologia. Todos os direitos reservados. - Sistema de Gestão de Cestas Básicas</p>
+</footer>
+
+<script>
+    // Variáveis globais
+    let familias = [];
+    let entregas = [];
+    let currentSection = 'dashboard';
+
+    // Inicialização quando o DOM estiver carregado
+    document.addEventListener('DOMContentLoaded', function() {
+        // Configurar data atual para o campo de entrega
+        document.getElementById('dataEntrega').valueAsDate = new Date();
+        
+        // Calcular idade quando a data de nascimento for alterada
+        document.getElementById('responsavelNascimento').addEventListener('change', calcularIdade);
+        
+        // Carregar dados iniciais
+        carregarDadosIniciais();
+        
+        // Configurar formulários
+        document.getElementById('familiaForm').addEventListener('submit', salvarFamilia);
+        document.getElementById('entregaForm').addEventListener('submit', registrarEntrega);
+    });
+
+    // Função para mostrar/ocultar seções
+    function showSection(sectionId) {
+        // Oculta todas as seções
+        document.querySelectorAll('.form-section').forEach(section => {
+            section.classList.add('hidden');
+        });
+        
+        // Remove a classe active de todos os botões de navegação
+        document.querySelectorAll('nav button').forEach(button => {
+            button.classList.remove('active');
+        });
+        
+        // Mostra a seção solicitada e atualiza o botão de navegação
+        document.getElementById(sectionId).classList.remove('hidden');
+        document.getElementById('nav' + sectionId.charAt(0).toUpperCase() + sectionId.slice(1)).classList.add('active');
+        
+        // Atualiza a seção atual
+        currentSection = sectionId;
+        
+        // Se for a seção de entregas ou histórico, carrega as famílias
+        if (sectionId === 'entregas' || sectionId === 'historico') {
+            carregarSelectFamilias();
+        }
+        
+        // Se for a seção de consulta, carrega as famílias
+        if (sectionId === 'consulta') {
+            buscarFamilias();
+        }
+        
+        // Se for a seção de histórico, carrega as entregas
+        if (sectionId === 'historico') {
+            filtrarEntregas();
+        }
+    }
+
+    // Função para abrir abas
+    function openTab(evt, tabId) {
+        // Remove a classe active de todos os botões e conteúdos
+        const tabButtons = evt.currentTarget.parentElement.querySelectorAll('.tab-btn');
+        const tabPanes = evt.currentTarget.parentElement.parentElement.querySelectorAll('.tab-pane');
+        
+        tabButtons.forEach(button => button.classList.remove('active'));
+        tabPanes.forEach(pane => pane.classList.remove('active'));
+        
+        // Adiciona a classe active ao botão clicado e ao conteúdo correspondente
+        evt.currentTarget.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+    }
+
+    // Função para calcular idade a partir da data de nascimento
+    function calcularIdade() {
+        const nascimento = new Date(document.getElementById('responsavelNascimento').value);
+        const hoje = new Date();
+        let idade = hoje.getFullYear() - nascimento.getFullYear();
+        const mes = hoje.getMonth() - nascimento.getMonth();
+        
+        if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
+            idade--;
+        }
+        
+        document.getElementById('responsavelIdade').value = idade;
+    }
+
+    // Função para adicionar membro da família
+    function adicionarMembro() {
+        const container = document.getElementById('membrosFamilia');
+        const novoMembro = document.createElement('div');
+        novoMembro.className = 'membro-item';
+        novoMembro.innerHTML = `
+            <h4>Membro da Família</h4>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nome *</label>
+                    <input type="text" name="membroNome[]" required>
+                </div>
+                <div class="form-group">
+                    <label>Idade *</label>
+                    <input type="number" name="membroIdade[]" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label>Escolaridade</label>
+                    <select name="membroEscolaridade[]">
+                        <option value="">Selecione</option>
+                        <option value="fundamental_incompleto">Fundamental Incompleto</option>
+                        <option value="fundamental_completo">Fundamental Completo</option>
+                        <option value="medio_incompleto">Médio Incompleto</option>
+                        <option value="medio_completo">Médio Completo</option>
+                        <option value="superior_incompleto">Superior Incompleto</option>
+                        <option value="superior_completo">Superior Completo</option>
+                        <option value="pos_graduacao">Pós-graduação</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Estuda?</label>
+                    <select name="membroEstuda[]">
+                        <option value="nao">Não</option>
+                        <option value="sim">Sim</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <button type="button" class="btn-danger" onclick="removerMembro(this)">Remover</button>
+                </div>
+            </div>
+        `;
+        container.appendChild(novoMembro);
+    }
+
+    // Função para remover membro da família
+    function removerMembro(botao) {
+        const membroItem = botao.closest('.membro-item');
+        if (document.querySelectorAll('.membro-item').length > 1) {
+            membroItem.remove();
+        } else {
+            alert('É necessário ter pelo menos um membro na família.');
+        }
+    }
+
+    // Função para limpar formulário
+    function limparFormulario() {
+        if (confirm('Tem certeza que deseja limpar o formulário? Todos os dados não salvos serão perdidos.')) {
+            document.getElementById('familiaForm').reset();
+            // Remove todos os membros adicionados, exceto o primeiro (responsável)
+            const membros = document.querySelectorAll('.membro-item');
+            for (let i = 1; i < membros.length; i++) {
+                membros[i].remove();
+            }
+        }
+    }
+
+    // Função para carregar dados iniciais
+    function carregarDadosIniciais() {
+        // Simulação de carregamento de dados do servidor
+        setTimeout(() => {
+            // Dados simulados para o dashboard
+            document.getElementById('totalFamilias').textContent = '24';
+            document.getElementById('cestasMes').textContent = '18';
+            document.getElementById('totalPessoas').textContent = '97';
+            document.getElementById('cestasEstoque').textContent = '12';
+            
+            // Simular últimas entregas
+            const ultimasEntregas = [
+                { data: '15/03/2023', familia: 'Silva Santos', responsavel: 'Maria Silva', quantidade: 1 },
+                { data: '12/03/2023', familia: 'Oliveira Costa', responsavel: 'José Oliveira', quantidade: 2 },
+                { data: '08/03/2023', familia: 'Pereira Almeida', responsavel: 'Ana Pereira', quantidade: 1 },
+                { data: '05/03/2023', familia: 'Rodrigues Martins', responsavel: 'Carlos Rodrigues', quantidade: 1 },
+                { data: '01/03/2023', familia: 'Ferreira Lima', responsavel: 'Paula Ferreira', quantidade: 1 }
+            ];
+            
+            const tbody = document.querySelector('#ultimasEntregas tbody');
+            tbody.innerHTML = '';
+            ultimasEntregas.forEach(entrega => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${entrega.data}</td>
+                    <td>${entrega.familia}</td>
+                    <td>${entrega.responsavel}</td>
+                    <td>${entrega.quantidade}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }, 500);
+    }
+
+    // Função para carregar select de famílias
+    function carregarSelectFamilias() {
+        // Simulação de carregamento de famílias do servidor
+        const familiasSelect = document.getElementById('familiaEntrega');
+        const familiasFiltro = document.getElementById('familiaFiltro');
+        
+        // Limpar selects
+        familiasSelect.innerHTML = '<option value="">Selecione uma família</option>';
+        familiasFiltro.innerHTML = '<option value="">Todas as famílias</option>';
+        
+        // Dados simulados
+        const familiasSimuladas = [
+            { id: 1, nome: 'Silva Santos', responsavel: 'Maria Silva' },
+            { id: 2, nome: 'Oliveira Costa', responsavel: 'José Oliveira' },
+            { id: 3, nome: 'Pereira Almeida', responsavel: 'Ana Pereira' },
+            { id: 4, nome: 'Rodrigues Martins', responsavel: 'Carlos Rodrigues' },
+            { id: 5, nome: 'Ferreira Lima', responsavel: 'Paula Ferreira' }
+        ];
+        
+        // Adicionar opções aos selects
+        familiasSimuladas.forEach(familia => {
+            const option = document.createElement('option');
+            option.value = familia.id;
+            option.textContent = `${familia.nome} (${familia.responsavel})`;
+            
+            familiasSelect.appendChild(option.cloneNode(true));
+            familiasFiltro.appendChild(option.cloneNode(true));
+        });
+    }
+
+    // Função para salvar família
+    function salvarFamilia(event) {
+        event.preventDefault();
+        
+        // Simulação de salvamento
+        alert('Cadastro salvo com sucesso!');
+        document.getElementById('familiaForm').reset();
+        
+        // Voltar para o dashboard
+        showSection('dashboard');
+    }
+
+    // Função para registrar entrega
+    function registrarEntrega(event) {
+        event.preventDefault();
+        
+        // Simulação de registro
+        alert('Entrega registrada com sucesso!');
+        document.getElementById('entregaForm').reset();
+        document.getElementById('dataEntrega').valueAsDate = new Date();
+        
+        // Voltar para o dashboard
+        showSection('dashboard');
+    }
+
+    // Função para buscar famílias
+    function buscarFamilias() {
+        const termo = document.getElementById('buscaFamilia').value.toLowerCase();
+        
+        // Simulação de busca
+        const familiasSimuladas = [
+            { responsavel: 'Maria Silva', cpf: '123.456.789-00', telefone: '(48) 99999-9999', membros: 4, ultimaEntrega: '15/03/2023' },
+            { responsavel: 'José Oliveira', cpf: '987.654.321-00', telefone: '(48) 98888-8888', membros: 3, ultimaEntrega: '12/03/2023' },
+            { responsavel: 'Ana Pereira', cpf: '456.789.123-00', telefone: '(48) 97777-7777', membros: 5, ultimaEntrega: '08/03/2023' },
+            { responsavel: 'Carlos Rodrigues', cpf: '321.654.987-00', telefone: '(48) 96666-6666', membros: 2, ultimaEntrega: '05/03/2023' },
+            { responsavel: 'Paula Ferreira', cpf: '789.123.456-00', telefone: '(48) 95555-5555', membros: 6, ultimaEntrega: '01/03/2023' }
+        ];
+        
+        const tbody = document.querySelector('#tabelaFamilias tbody');
+        tbody.innerHTML = '';
+        
+        familiasSimuladas.forEach(familia => {
+            if (!termo || familia.responsavel.toLowerCase().includes(termo) || familia.cpf.includes(termo)) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${familia.responsavel}</td>
+                    <td>${familia.cpf}</td>
+                    <td>${familia.telefone}</td>
+                    <td>${familia.membros}</td>
+                    <td>${familia.ultimaEntrega}</td>
+                    <td>
+                        <button class="btn-primary">Editar</button>
+                        <button class="btn-danger">Excluir</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            }
+        });
+    }
+
+    // Função para limpar busca
+    function limparBusca() {
+        document.getElementById('buscaFamilia').value = '';
+        buscarFamilias();
+    }
+
+    // Função para filtrar entregas
+    function filtrarEntregas() {
+        // Simulação de filtro
+        const entregasSimuladas = [
+            { data: '15/03/2023', familia: 'Silva Santos', responsavel: 'Maria Silva', quantidade: 1, entreguePor: 'João Entregador' },
+            { data: '12/03/2023', familia: 'Oliveira Costa', responsavel: 'José Oliveira', quantidade: 2, entreguePor: 'Maria Entregadora' },
+            { data: '08/03/2023', familia: 'Pereira Almeida', responsavel: 'Ana Pereira', quantidade: 1, entreguePor: 'João Entregador' },
+            { data: '05/03/2023', familia: 'Rodrigues Martins', responsavel: 'Carlos Rodrigues', quantidade: 1, entreguePor: 'Pedro Entregador' },
+            { data: '01/03/2023', familia: 'Ferreira Lima', responsavel: 'Paula Ferreira', quantidade: 1, entreguePor: 'Maria Entregadora' }
+        ];
+        
+        const tbody = document.querySelector('#tabelaEntregas tbody');
+        tbody.innerHTML = '';
+        
+        entregasSimuladas.forEach(entrega => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${entrega.data}</td>
+                <td>${entrega.familia}</td>
+                <td>${entrega.responsavel}</td>
+                <td>${entrega.quantidade}</td>
+                <td>${entrega.entreguePor}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+</script>
+</body>
+</html>
