@@ -36,29 +36,24 @@
 
         header {
             background: var(--bege-claro);
-            padding: 1.5rem;
+            padding: 1rem 1.5rem;
             display: flex;
             align-items: center;
-            justify-content: space-between;
             box-shadow: var(--sombra-suave);
             position: relative;
             overflow: hidden;
             border-bottom: 1px solid rgba(165, 42, 42, 0.1);
         }
 
-        .logo-container {
-            display: flex;
-            align-items: center;
-        }
-
-        .logo {
-            height: 60px;
+        #logo {
+            height: 45px; /* Reduzido de 60px para 45px */
             margin-right: 15px;
         }
 
         .header-title {
-            font-size: 1.8rem;
+            font-size: 1.5rem; /* Reduzido de 1.8rem para 1.5rem */
             color: var(--texto-escuro);
+            flex-grow: 1;
         }
 
         .header-title span {
@@ -338,6 +333,22 @@
 
         /* Responsividade */
         @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                text-align: center;
+                padding: 1rem;
+            }
+            
+            #logo {
+                margin-right: 0;
+                margin-bottom: 10px;
+                height: 40px;
+            }
+            
+            .header-title {
+                font-size: 1.3rem;
+            }
+            
             .form-row {
                 flex-direction: column;
                 gap: 0;
@@ -350,9 +361,20 @@
             nav li {
                 margin-bottom: 0.5rem;
             }
+        }
+
+        @media (max-width: 480px) {
+            #logo {
+                height: 35px;
+            }
             
             .header-title {
-                font-size: 1.4rem;
+                font-size: 1.2rem;
+            }
+            
+            nav button {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
             }
         }
     </style>
@@ -360,7 +382,7 @@
 <body>
 <header>
     <img src="/static/logo_maisdecristo_b2.jpg" alt="Logo Igreja Mais de Cristo" id="logo">
-    <h1>Gestão de Cestas Básicas</h1>
+    <h1 class="header-title">Gestão de <span>Cestas Básicas</span></h1>
 </header>
 
 <main id="mainContent">
