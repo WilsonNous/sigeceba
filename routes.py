@@ -3,38 +3,46 @@ from flask import Flask, request, jsonify, send_from_directory
 import logging
 import os
 
-# Importações do seu database.py
-from database import (
-    init_db,
-    get_dashboard_data,
-    salvar_familia,
-    listar_familias,
-    salvar_entrega,
-    listar_entregas,
-    registrar_entrada_estoque,
-    get_saldo_estoque,
-    listar_movimentacoes_estoque
-)
+print("✅ 1. Iniciando importação do database...")
+
+try:
+    from database import (
+        init_db,
+        get_dashboard_data,
+        salvar_familia,
+        listar_familias,
+        salvar_entrega,
+        listar_entregas,
+        registrar_entrada_estoque,
+        get_saldo_estoque,
+        listar_movimentacoes_estoque
+    )
+    print("✅ 2. Importações do database carregadas com sucesso!")
+except Exception as e:
+    print(f"❌ ERRO AO IMPORTAR DO DATABASE: {e}")
+    raise
 
 # Configuração do app Flask
 app = Flask(__name__, template_folder='.')
+print("✅ 3. App Flask criado com sucesso")
 
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)
+print("✅ 4. Logging configurado")
 
-# === INICIALIZAÇÃO DO BANCO DE DADOS (substitui @app.before_first_request) ===
-# Flask >= 2.3 não tem before_first_request, então usamos app.app_context()
-with app.app_context():
-    try:
+# Inicializa o banco
+print("🔧 5. Inicializando banco de dados...")
+try:
+    with app.app_context():
         init_db()
-        logging.info("✅ Banco de dados inicializado com sucesso.")
-    except Exception as e:
-        logging.error(f"❌ Erro ao inicializar o banco de dados: {e}")
+    print("✅ 5. Banco de dados inicializado com sucesso!")
+except Exception as e:
+    print(f"❌ ERRO AO INICIALIZAR BANCO: {e}")
 
 # === SERVIÇÃO DE ARQUIVOS ESTÁTICOS ===
-
 @app.route('/')
 def index():
+    print("✅ Rota / acessada")
     return send_from_directory('.', 'index.html')
 
 @app.route('/css/<path:filename>')
@@ -54,6 +62,27 @@ def static_files_legacy(filename):
     return send_from_directory('static', filename)
 
 # === ROTAS DA API ===
+print("🔧 6. Registrando rotas da API...")
+
+@app.route('/dashboard-data', methods=['GET'])
+def dashboard_data():
+    print("✅ Rota /dashboard-data chamada")
+    data = get_dashboard_data()
+    return jsonify(data), 200
+
+@app.route('/buscar-familias', methods=['GET'])
+def buscar_familias_route():
+    query = request.args.get('q', '').strip()
+    familias = listar_familias(query)
+    return jsonify(familias), 200
+
+@app.route('/listar-entregas', methods=['GET'])
+def listar_entregas_route():
+    data_inicio = request.args.get('dataInicio')
+    data_fim = request.args.get('dataFim')
+    familia = request.args.get('familia')
+    entregas = listar_entregas(data_inicio, data_fim, familia)
+    return jsonify(entregas), 200
 
 @app.route('/cadastrar-familia', methods=['POST'])
 def cadastrar_familia():
@@ -69,7 +98,6 @@ def cadastrar_familia():
         return jsonify({"message": "Família cadastrada com sucesso!", "id": familia_id}), 201
     return jsonify({"error": "Erro ao cadastrar família."}), 500
 
-
 @app.route('/registrar-entrega', methods=['POST'])
 def registrar_entrega():
     data = request.get_json()
@@ -81,29 +109,6 @@ def registrar_entrega():
     if salvar_entrega(data):
         return jsonify({"message": "Entrega registrada com sucesso!"}), 201
     return jsonify({"error": "Erro ao registrar entrega."}), 500
-
-
-@app.route('/buscar-familias', methods=['GET'])
-def buscar_familias_route():
-    query = request.args.get('q', '').strip()
-    familias = listar_familias(query)
-    return jsonify(familias), 200
-
-
-@app.route('/listar-entregas', methods=['GET'])
-def listar_entregas_route():
-    data_inicio = request.args.get('dataInicio')
-    data_fim = request.args.get('dataFim')
-    familia = request.args.get('familia')
-    entregas = listar_entregas(data_inicio, data_fim, familia)
-    return jsonify(entregas), 200
-
-
-@app.route('/dashboard-data', methods=['GET'])
-def dashboard_data():
-    data = get_dashboard_data()
-    return jsonify(data), 200
-
 
 @app.route('/registrar-entrada-estoque', methods=['POST'])
 def registrar_entrada_estoque_route():
@@ -117,26 +122,23 @@ def registrar_entrada_estoque_route():
         return jsonify({"message": "Entrada de estoque registrada com sucesso!"}), 201
     return jsonify({"error": "Erro ao registrar entrada."}), 500
 
-
 @app.route('/saldo-estoque', methods=['GET'])
 def saldo_estoque():
     saldo = get_saldo_estoque()
     return jsonify({"cestasEstoque": saldo}), 200
-
 
 @app.route('/movimentacoes-estoque', methods=['GET'])
 def movimentacoes_estoque():
     movimentacoes = listar_movimentacoes_estoque()
     return jsonify(movimentacoes), 200
 
-
-# === HEALTH CHECK ===
 @app.route('/ping')
 def ping():
     return jsonify({"status": "ok", "message": "Servidor rodando"}), 200
 
+print("✅ 7. Todas as rotas foram registradas!")
 
-# Para rodar localmente
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    print(f"🚀 Iniciando servidor na porta {port}...")
+    app.run(host='0.0.0.0', port=port, debug=False)
