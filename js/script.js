@@ -154,8 +154,8 @@ async function buscarFamilias() {
                 <td>${f.numero_pessoas}</td>
                 <td>—</td>
                 <td>
-                    <button class="btn-primary">Editar</button>
-                    <button class="btn-secondary">Detalhes</button>
+                    <button class="btn-primary" onclick="editarFamilia(${f.id})">Editar</button>
+                    <button class="btn-secondary" onclick="detalhesFamilia(${f.id})">Detalhes</button>
                 </td>
             `;
             tbody.appendChild(tr);
@@ -165,12 +165,12 @@ async function buscarFamilias() {
         console.error(err);
     }
 }
-// === FUNÇÕES PARA EDITAR E DETALHES ===
+// === FUNÇÕES DE AÇÃO DA TABELA ===
 
 function editarFamilia(id) {
-    alert(`Funcionalidade de edição da família ${id} será implementada.`);
-    // Aqui você pode abrir um modal ou redirecionar para um formulário de edição
-    // Ex: showSection('cadastro'); e preencher os campos
+    alert(`Editar família ID: ${id}`);
+    // Futuramente: carregar dados e preencher o formulário de cadastro
+    // showSection('cadastro');
 }
 
 function detalhesFamilia(id) {
@@ -180,21 +180,22 @@ function detalhesFamilia(id) {
         .then(familias => {
             const f = familias[0];
             if (f) {
-                alert(
-                    `Detalhes da Família\n\n` +
-                    `Responsável: ${f.responsavel_nome}\n` +
-                    `CPF: ${f.cpf}\n` +
-                    `Telefone: ${f.telefone}\n` +
-                    `Membros: ${f.numero_pessoas}\n` +
-                    `Observações: ${f.observacoes || '—'}`
-                );
+                let mensagem = `Detalhes da Família\n\n`;
+                mensagem += `Responsável: ${f.responsavel_nome}\n`;
+                mensagem += `CPF: ${f.cpf}\n`;
+                mensagem += `Telefone: ${f.telefone}\n`;
+                mensagem += `Membros na casa: ${f.numero_pessoas}\n`;
+                mensagem += `Filhos: ${f.numero_filhos || 0}\n`;
+                // Você pode expandir com mais campos
+                alert(mensagem);
             }
         })
         .catch(err => {
-            alert("Erro ao carregar detalhes.");
+            alert("Erro ao carregar detalhes da família.");
             console.error(err);
         });
 }
+
 // === POPULAR SELECT DE ENTREGA ===
 async function carregarFamiliasSelect() {
     try {
