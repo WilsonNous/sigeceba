@@ -165,7 +165,36 @@ async function buscarFamilias() {
         console.error(err);
     }
 }
+// === FUNÇÕES PARA EDITAR E DETALHES ===
 
+function editarFamilia(id) {
+    alert(`Funcionalidade de edição da família ${id} será implementada.`);
+    // Aqui você pode abrir um modal ou redirecionar para um formulário de edição
+    // Ex: showSection('cadastro'); e preencher os campos
+}
+
+function detalhesFamilia(id) {
+    // Busca os dados da família
+    fetch(`/buscar-familias?q=${id}`)
+        .then(r => r.json())
+        .then(familias => {
+            const f = familias[0];
+            if (f) {
+                alert(
+                    `Detalhes da Família\n\n` +
+                    `Responsável: ${f.responsavel_nome}\n` +
+                    `CPF: ${f.cpf}\n` +
+                    `Telefone: ${f.telefone}\n` +
+                    `Membros: ${f.numero_pessoas}\n` +
+                    `Observações: ${f.observacoes || '—'}`
+                );
+            }
+        })
+        .catch(err => {
+            alert("Erro ao carregar detalhes.");
+            console.error(err);
+        });
+}
 // === POPULAR SELECT DE ENTREGA ===
 async function carregarFamiliasSelect() {
     try {
