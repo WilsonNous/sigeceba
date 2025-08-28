@@ -1,1 +1,326 @@
 
+/* css/style.css */
+:root {
+    --vermelho-cruz: #A52A2A;
+    --laranja-titulo: #E85C1F;
+    --cinza-degrade: #8C7C6D;
+    --bege-fundo: #FDF6EB;
+    --bege-claro: #FFFBF5;
+    --amarelo-trigo: #E5C07B;
+    --texto-escuro: #5A4C3F;
+    --texto-medio: #7A6D5F;
+    --sombra-suave: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --sombra-media: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: var(--bege-fundo);
+    color: var(--texto-medio);
+    line-height: 1.6;
+}
+
+header {
+    background: var(--bege-claro);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    box-shadow: var(--sombra-suave);
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid rgba(165, 42, 42, 0.1);
+}
+
+#logo {
+    height: 45px;
+    margin-right: 15px;
+}
+
+.header-title {
+    font-size: 1.5rem;
+    color: var(--texto-escuro);
+    flex-grow: 1;
+}
+
+.header-title span {
+    color: var(--laranja-titulo);
+    font-weight: 600;
+}
+
+main {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Menu de navegação */
+nav {
+    background: var(--bege-claro);
+    padding: 0.8rem;
+    margin-bottom: 2rem;
+    border-radius: 8px;
+    box-shadow: var(--sombra-suave);
+    border: 1px solid rgba(165, 42, 42, 0.1);
+}
+
+nav ul {
+    display: flex;
+    list-style: none;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+nav li {
+    margin: 0.5rem;
+}
+
+nav button {
+    background: transparent;
+    border: 1px solid var(--amarelo-trigo);
+    color: var(--texto-medio);
+    padding: 0.7rem 1.5rem;
+    cursor: pointer;
+    border-radius: 50px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+nav button:hover {
+    background: rgba(165, 42, 42, 0.05);
+    border-color: var(--laranja-titulo);
+}
+
+nav button.active {
+    background: var(--laranja-titulo);
+    color: white;
+    border-color: var(--laranja-titulo);
+}
+
+/* Cards de informações */
+.info-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.info-card {
+    background: var(--bege-claro);
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: var(--sombra-suave);
+    text-align: center;
+    transition: transform 0.3s ease;
+    border: 1px solid rgba(165, 42, 42, 0.1);
+}
+
+.info-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--sombra-media);
+}
+
+.info-card h3 {
+    color: var(--texto-medio);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.info-card p {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--vermelho-cruz);
+}
+
+/* Formulários */
+.form-section {
+    background: var(--bege-claro);
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: var(--sombra-suave);
+    margin-bottom: 2rem;
+    border: 1px solid rgba(165, 42, 42, 0.1);
+}
+
+.form-section h2 {
+    color: var(--vermelho-cruz);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--amarelo-trigo);
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--texto-escuro);
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+    background: white;
+    color: var(--texto-escuro);
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--laranja-titulo);
+    box-shadow: 0 0 0 2px rgba(232, 92, 31, 0.1);
+}
+
+.form-row {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.2rem;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+button {
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: var(--laranja-titulo);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #d35400;
+    box-shadow: var(--sombra-media);
+}
+
+.btn-secondary {
+    background: var(--texto-medio);
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: var(--texto-escuro);
+    box-shadow: var(--sombra-media);
+}
+
+.btn-success {
+    background: #27ae60;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #219653;
+    box-shadow: var(--sombra-media);
+}
+
+/* Tabelas */
+.table-container {
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--sombra-suave);
+    border: 1px solid rgba(165, 42, 42, 0.1);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--bege-claro);
+}
+
+th, td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(165, 42, 42, 0.1);
+}
+
+th {
+    background: var(--bege-fundo);
+    color: var(--texto-escuro);
+    font-weight: 600;
+}
+
+tr:hover {
+    background-color: rgba(229, 192, 123, 0.1);
+}
+
+footer {
+    text-align: center;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    background: var(--bege-claro);
+    color: var(--texto-medio);
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+    border-top: 1px solid rgba(165, 42, 42, 0.1);
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    header {
+        flex-direction: column;
+        text-align: center;
+        padding: 1rem;
+    }
+    
+    #logo {
+        margin-right: 0;
+        margin-bottom: 10px;
+        height: 40px;
+    }
+    
+    .header-title {
+        font-size: 1.3rem;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    nav ul {
+        flex-direction: column;
+    }
+    
+    nav li {
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #logo {
+        height: 35px;
+    }
+    
+    .header-title {
+        font-size: 1.2rem;
+    }
+    
+    nav button {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+    }
+}
