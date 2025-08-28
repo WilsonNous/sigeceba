@@ -162,17 +162,24 @@ def listar_familias(query=None):
             cursor.execute(sql, params)
             familias = []
             for row in cursor.fetchall():
+                # Extrair dados da observação
                 nome = "Nome não registrado"
+                cpf = "—"
+                telefone = "—"
                 if row['observacoes']:
                     for line in row['observacoes'].split(', '):
                         if line.startswith('Responsável:'):
                             nome = line.replace('Responsável: ', '').split(',')[0]
-                            break
+                        elif 'CPF:' in line:
+                            cpf = line.split('CPF: ')[1].split(',')[0]
+                        elif 'Telefone:' in line:
+                            telefone = line.split('Telefone: ')[1].split(',')[0]
+
                 familias.append({
                     'id': row['id'],
                     'responsavel_nome': nome,
-                    'cpf': 'Não registrado',
-                    'telefone': 'Não registrado',
+                    'cpf': cpf,
+                    'telefone': telefone,
                     'numero_pessoas': row['numero_pessoas'],
                     'ultimaEntrega': '—'
                 })
