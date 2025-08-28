@@ -1,9 +1,12 @@
 # database.py
-
 import pymysql
 import logging
 from contextlib import contextmanager
 
+# Configuração de logging
+logging.basicConfig(level=logging.INFO)
+
+# Configuração do banco de dados
 DB_CONFIG = {
     'host': '108.167.132.58',
     'user': 'noust785_admin',
@@ -14,14 +17,17 @@ DB_CONFIG = {
 }
 
 def get_db_connection():
+    """Conecta ao banco de dados MySQL"""
     try:
-        return pymysql.connect(**DB_CONFIG)
+        conn = pymysql.connect(**DB_CONFIG)
+        return conn
     except pymysql.MySQLError as e:
-        logging.error(f"Erro ao conectar ao banco: {e}")
+        logging.error(f"Erro ao conectar ao banco de dados MySQL: {e}")
         raise
 
 @contextmanager
 def get_db_cursor(commit=False):
+    """Context manager para conexão e cursor ao banco de dados"""
     conn = get_db_connection()
     cursor = None
     try:
@@ -31,14 +37,86 @@ def get_db_cursor(commit=False):
             conn.commit()
     except Exception as e:
         conn.rollback()
-        logging.error(f"Erro na operação de banco: {e}")
+        logging.error(f"Erro na operação de banco de dados: {e}")
         raise
     finally:
         if cursor:
             cursor.close()
         conn.close()
 
-# === FUNÇÕES ===
+# === INICIALIZAÇÃO DO BANCO ===
+def init_db():
+    """Cria as tabelas do sistema de cestas básicas, se não existirem"""
+    create_familias = """
+    CREATE TABLE IF NOT EXISTS familias_cestas (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        numero_pessoas INT NOT NULL DEFAULT 1,
+        numero_filhos INT NOT NULL DEFAULT 0,
+        renda_mensal_familia DECIMAL(10,2) NULL,
+        beneficios_sociais TEXT NULL,
+        condicao_moradia ENUM('própria', 'alugada', 'cedida', 'invasão') NULL,
+        tipo_moradia ENUM('casa', 'apartamento', 'barraco', 'outro') NULL,
+        observacoes TEXT NULL,
+        necessidades_especificas TEXT NULL,
+        data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        ativo BOOLEAN DEFAULT TRUE,
+        INDEX idx_data_cadastro (data_cadastro)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """
+
+    create_membros = """
+    CREATE TABLE IF NOT EXISTS familia_membros (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        id_familia INT NOT NULL,
+        nome_completo VARCHAR(255) NOT NULL,
+        idade INT NULL,
+        escolaridade VARCHAR(100) NULL,
+        estuda BOOLEAN DEFAULT FALSE,
+        parentesco ENUM('cônjuge', 'filho', 'pai', 'mãe', 'avo', 'outro') NULL,
+        FOREIGN KEY (id_familia) REFERENCES familias_cestas(id),
+        INDEX idx_familia (id_familia)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """
+
+    create_movimento = """
+    CREATE TABLE IF NOT EXISTS movimento_cestas (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        id_familia INT NOT NULL,
+        id_membro_entregue INT NULL,
+        id_visitante_entregue INT NULL,
+        data_entrega DATE NOT NULL,
+        quantidade_cestas INT DEFAULT 1,
+        observacoes_entrega TEXT NULL,
+        id_usuario_registro INT NOT NULL,
+        data_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (id_familia) REFERENCES familias_cestas(id),
+        INDEX idx_familia_data (id_familia, data_entrega)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """
+
+    create_estoque = """
+    CREATE TABLE IF NOT EXISTS estoque_cestas (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        data_entrada DATE NOT NULL,
+        quantidade_entrada INT NOT NULL,
+        fornecedor VARCHAR(255) NULL,
+        observacoes TEXT NULL,
+        data_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """
+
+    try:
+        with get_db_cursor(commit=True) as cursor:
+            cursor.execute(create_familias)
+            cursor.execute(create_membros)
+            cursor.execute(create_movimento)
+            cursor.execute(create_estoque)
+        logging.info("✅ Tabelas verificadas/criadas com sucesso.")
+    except Exception as e:
+        logging.error(f"❌ Erro ao inicializar tabelas: {e}")
+        raise
+
+# === FUNÇÕES DE NEGÓCIO ===
 
 def salvar_familia(data):
     """Salva uma nova família na tabela familias_cestas"""
@@ -54,12 +132,12 @@ def salvar_familia(data):
             cursor.execute(sql, [
                 data['numeroPessoas'],
                 data['numeroFilhos'],
-                None,  # renda_mensal_familia
-                None,  # beneficios_sociais
-                None,  # condicao_moradia
-                None,  # tipo_moradia
+                None,
+                None,
+                None,
+                None,
                 f"Responsável: {data['responsavelNome']}, CPF: {data['responsavelCPF']}, Nascimento: {data['responsavelNascimento']}, Gênero: {data['responsavelGenero']}, Endereço: {data['responsavelEndereco']}, Telefone: {data.get('telefone', '')}",
-                None  # necessidades_especificas
+                None
             ])
             return cursor.lastrowid
     except Exception as e:
@@ -69,9 +147,7 @@ def salvar_familia(data):
 def listar_familias(query=None):
     """Lista famílias com filtro opcional"""
     sql = """
-    SELECT 
-        f.id, f.numero_pessoas, f.numero_filhos, f.observacoes,
-        f.data_cadastro, f.ativo
+    SELECT f.id, f.numero_pessoas, f.numero_filhos, f.observacoes, f.data_cadastro, f.ativo
     FROM familias_cestas f
     WHERE f.ativo = TRUE
     """
@@ -86,7 +162,6 @@ def listar_familias(query=None):
             cursor.execute(sql, params)
             familias = []
             for row in cursor.fetchall():
-                # Extrai nome do responsável da observação
                 nome = "Nome não registrado"
                 if row['observacoes']:
                     for line in row['observacoes'].split(', '):
@@ -121,7 +196,7 @@ def salvar_entrega(data):
                 data['dataEntrega'],
                 data['quantidadeCestas'],
                 f"Entregue por: {data['responsavelEntrega']}",
-                1  # id_usuario_registro (pode vir do login depois)
+                1
             ])
         return True
     except Exception as e:
@@ -131,9 +206,7 @@ def salvar_entrega(data):
 def listar_entregas(filtro_data_inicio=None, filtro_data_fim=None, familia_id=None):
     """Lista entregas com filtros"""
     sql = """
-    SELECT 
-        m.data_entrega, m.quantidade_cestas, m.observacoes_entrega,
-        f.id as familia_id
+    SELECT m.data_entrega, m.quantidade_cestas, m.observacoes_entrega, f.id as familia_id
     FROM movimento_cestas m
     JOIN familias_cestas f ON m.id_familia = f.id
     WHERE 1=1
@@ -155,7 +228,6 @@ def listar_entregas(filtro_data_inicio=None, filtro_data_fim=None, familia_id=No
             cursor.execute(sql, params)
             entregas = []
             for row in cursor.fetchall():
-                # Extrai nome do responsável da observação
                 nome = "Família"
                 if row.get('observacoes_entrega'):
                     for line in row['observacoes_entrega'].split(', '):
@@ -192,14 +264,10 @@ def get_saldo_estoque():
     """Calcula saldo de cestas (entradas - saídas)"""
     try:
         with get_db_cursor() as cursor:
-            # Total de entradas
             cursor.execute("SELECT COALESCE(SUM(quantidade_entrada), 0) FROM estoque_cestas")
             total_entrada = cursor.fetchone()[0] or 0
-
-            # Total de entregas (saídas)
             cursor.execute("SELECT COALESCE(SUM(quantidade_cestas), 0) FROM movimento_cestas")
             total_saida = cursor.fetchone()[0] or 0
-
             return total_entrada - total_saida
     except Exception as e:
         logging.error(f"Erro ao calcular saldo de estoque: {e}")
@@ -209,33 +277,21 @@ def listar_movimentacoes_estoque():
     """Lista entradas e saídas de cestas"""
     try:
         with get_db_cursor() as cursor:
-            # Entradas
             cursor.execute("""
-                SELECT 
-                    data_entrada as data,
-                    quantidade_entrada as entrada,
-                    0 as saida,
-                    fornecedor as motivo,
-                    'Estoque' as responsavel
+                SELECT data_entrada as data, quantidade_entrada as entrada, 0 as saida,
+                       fornecedor as motivo, 'Estoque' as responsavel
                 FROM estoque_cestas
                 ORDER BY data_entrada DESC
             """)
             entradas = cursor.fetchall()
-
-            # Saídas (entregas)
             cursor.execute("""
-                SELECT 
-                    data_entrega as data,
-                    0 as entrada,
-                    quantidade_cestas as saida,
-                    'Entrega a família' as motivo,
-                    'Sistema' as responsavel
+                SELECT data_entrega as data, 0 as entrada, quantidade_cestas as saida,
+                       'Entrega a família' as motivo, 'Sistema' as responsavel
                 FROM movimento_cestas
                 ORDER BY data_entrega DESC
             """)
             saidas = cursor.fetchall()
 
-            # Combina e ordena
             movimentacoes = []
             for e in entradas:
                 movimentacoes.append({
@@ -254,7 +310,6 @@ def listar_movimentacoes_estoque():
                     'responsavel': s['responsavel']
                 })
 
-            # Ordena por data
             movimentacoes.sort(key=lambda x: x['data_movimentacao'], reverse=True)
             return movimentacoes
     except Exception as e:
@@ -265,29 +320,22 @@ def get_dashboard_data():
     """Retorna dados para o dashboard"""
     try:
         with get_db_cursor() as cursor:
-            # Total de famílias ativas
             cursor.execute("SELECT COUNT(*) as c FROM familias_cestas WHERE ativo = TRUE")
             total_familias = cursor.fetchone()['c']
 
-            # Cestas entregues no mês
             cursor.execute("""
                 SELECT COUNT(*) as c FROM movimento_cestas 
                 WHERE data_entrega >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
             """)
             cestas_mes = cursor.fetchone()['c']
 
-            # Total de pessoas (usando numero_pessoas)
             cursor.execute("SELECT COALESCE(SUM(numero_pessoas), 0) as c FROM familias_cestas WHERE ativo = TRUE")
             total_pessoas = cursor.fetchone()['c']
 
-            # Saldo de estoque
             cestas_estoque = get_saldo_estoque()
 
-            # Últimas entregas
             cursor.execute("""
-                SELECT 
-                    m.data_entrega, m.quantidade_cestas,
-                    f.id as familia_id
+                SELECT m.data_entrega, m.quantidade_cestas, f.id as familia_id
                 FROM movimento_cestas m
                 JOIN familias_cestas f ON m.id_familia = f.id
                 ORDER BY m.data_entrega DESC LIMIT 3
