@@ -37,7 +37,7 @@ def cadastrar_familia():
     familia_id = salvar_familia(data)
     if familia_id:
         return jsonify({"message": "Família cadastrada com sucesso!", "id": familia_id}), 201
-    return jsonify({"error": "CPF já cadastrado ou erro no cadastro."}), 400
+    return jsonify({"error": "Erro ao cadastrar família."}), 500
 
 @app.route('/registrar-entrega', methods=['POST'])
 def registrar_entrega():
@@ -53,7 +53,7 @@ def registrar_entrega():
 
 @app.route('/buscar-familias', methods=['GET'])
 def buscar_familias_route():
-    query = request.args.get('q', '').strip()
+    query = request.args.get('q', '')
     familias = listar_familias(query)
     return jsonify(familias), 200
 
@@ -69,6 +69,28 @@ def listar_entregas_route():
 def dashboard_data():
     data = get_dashboard_data()
     return jsonify(data), 200
+
+@app.route('/registrar-entrada-estoque', methods=['POST'])
+def registrar_entrada_estoque_route():
+    data = request.get_json()
+    required = ['quantidade', 'fornecedor']
+    for field in required:
+        if not data.get(field):
+            return jsonify({"error": f"Campo obrigatório: {field}"}), 400
+
+    if registrar_entrada_estoque(data['quantidade'], data['fornecedor'], data.get('observacoes')):
+        return jsonify({"message": "Entrada de estoque registrada com sucesso!"}), 201
+    return jsonify({"error": "Erro ao registrar entrada."}), 500
+
+@app.route('/saldo-estoque', methods=['GET'])
+def saldo_estoque():
+    saldo = get_saldo_estoque()
+    return jsonify({"cestasEstoque": saldo}), 200
+
+@app.route('/movimentacoes-estoque', methods=['GET'])
+def movimentacoes_estoque():
+    movimentacoes = listar_movimentacoes_estoque()
+    return jsonify(movimentacoes), 200
 
 # Para rodar localmente
 if __name__ == '__main__':
