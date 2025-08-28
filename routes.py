@@ -3,7 +3,7 @@ from flask import Flask, request, jsonify, send_from_directory
 import logging
 import os
 
-# Importações do seu database.py (ajuste conforme necessário)
+# Importações do seu database.py
 from database import (
     init_db,
     get_dashboard_data,
@@ -22,39 +22,36 @@ app = Flask(__name__, template_folder='.')
 # Configuração de logging
 logging.basicConfig(level=logging.INFO)
 
-# Inicializa o banco ao iniciar (só executa uma vez)
-@app.before_first_request
-def setup():
-    init_db()
+# === INICIALIZAÇÃO DO BANCO DE DADOS (substitui @app.before_first_request) ===
+# Flask >= 2.3 não tem before_first_request, então usamos app.app_context()
+with app.app_context():
+    try:
+        init_db()
+        logging.info("✅ Banco de dados inicializado com sucesso.")
+    except Exception as e:
+        logging.error(f"❌ Erro ao inicializar o banco de dados: {e}")
 
 # === SERVIÇÃO DE ARQUIVOS ESTÁTICOS ===
 
-# Servir o index.html na raiz
 @app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
 
-# Servir arquivos CSS
 @app.route('/css/<path:filename>')
 def css_files(filename):
     return send_from_directory('css', filename)
 
-# Servir arquivos JS
 @app.route('/js/<path:filename>')
 def js_files(filename):
     return send_from_directory('js', filename)
 
-# Servir imagens (dentro de /static/imagens)
 @app.route('/static/imagens/<path:filename>')
 def imagens_files(filename):
     return send_from_directory('static/imagens', filename)
 
-# Caso queira manter compatibilidade com /static (opcional)
 @app.route('/static/<path:filename>')
 def static_files_legacy(filename):
-    # Pode redirecionar ou servir diretamente
     return send_from_directory('static', filename)
-
 
 # === ROTAS DA API ===
 
@@ -133,7 +130,7 @@ def movimentacoes_estoque():
     return jsonify(movimentacoes), 200
 
 
-# === HEALTH CHECK (opcional, útil no Render) ===
+# === HEALTH CHECK ===
 @app.route('/ping')
 def ping():
     return jsonify({"status": "ok", "message": "Servidor rodando"}), 200
