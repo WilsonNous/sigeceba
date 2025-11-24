@@ -116,8 +116,8 @@
 
 <script>
 async function fazerLogin() {
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("senha").value.trim();
+    const usuario = document.getElementById("email").value.trim();
+    const senha = document.getElementById("senha").value.trim();
     const msgErro = document.getElementById("msgErro");
 
     msgErro.textContent = "";
@@ -125,24 +125,21 @@ async function fazerLogin() {
     const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({
+            username: usuario,   // <-- IMPORTANTE!
+            password: senha      // <-- IMPORTANTE!
+        })
     });
 
-    let data = {};
-    try {
-        data = await res.json();
-    } catch (e) {
-        msgErro.textContent = "Erro inesperado no servidor.";
-        return;
-    }
+    const data = await res.json();
 
-    if (data.status === "success") {
-        localStorage.setItem("jwt_token", data.token);
+    if (data.status === "sucesso") {
         window.location.href = "/app";
     } else {
-        msgErro.textContent = data.message || "Usuário ou senha inválidos.";
+        msgErro.textContent = data.msg || "Falha ao autenticar";
     }
 }
+
 </script>
 
 </body>
