@@ -116,7 +116,7 @@
 
 <script>
 async function fazerLogin() {
-    const usuario = document.getElementById("email").value.trim();
+    const usuario = document.getElementById("username").value.trim();
     const senha = document.getElementById("senha").value.trim();
     const msgErro = document.getElementById("msgErro");
 
@@ -126,20 +126,22 @@ async function fazerLogin() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            username: usuario,   // <-- IMPORTANTE!
-            password: senha      // <-- IMPORTANTE!
+            username: usuario,
+            password: senha
         })
     });
 
     const data = await res.json();
 
-    if (data.status === "sucesso") {
+    if (data.status === "success") {
+        // Armazena token
+        sessionStorage.setItem("auth_token", data.token);
+
         window.location.href = "/app";
     } else {
-        msgErro.textContent = data.msg || "Falha ao autenticar";
+        msgErro.textContent = data.message || "Falha ao autenticar";
     }
 }
-
 </script>
 
 </body>
