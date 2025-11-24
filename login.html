@@ -6,13 +6,10 @@
     <title>Login • Gestão de Cestas Básicas</title>
 
     <style>
-        /* ============================
-           ESTILO GERAL (NOUS + IGREJA)
-        ============================ */
         body {
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #fafafa, #f2f2f2);
+            background: #f4f4f4;
             font-family: "Inter", Arial, sans-serif;
             display: flex;
             justify-content: center;
@@ -20,94 +17,78 @@
             height: 100vh;
         }
 
-        /* Caixa principal */
         .login-container {
-            background: #ffffff;
-            padding: 2.5rem;
-            border-radius: 14px;
+            background: #fff;
+            padding: 2rem;
+            border-radius: 10px;
             max-width: 380px;
             width: 90%;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.10);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             text-align: center;
             animation: fadeIn .6s ease;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-12px); }
+            from { opacity: 0; transform: translateY(-10px); }
             to   { opacity: 1; transform: translateY(0); }
         }
 
-        /* Logo */
         .login-container img {
             width: 110px;
-            margin-bottom: .5rem;
-            border-radius: 5px;
+            margin-bottom: 1rem;
         }
 
         h2 {
-            margin-bottom: 1.5rem;
-            font-size: 1.3rem;
-            color: #333;
-            font-weight: 600;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            color: #444;
         }
 
-        /* Campos */
         .form-group {
-            margin-bottom: 1.2rem;
+            margin-bottom: 1rem;
             text-align: left;
         }
 
         label {
             font-weight: 600;
             display: block;
-            margin-bottom: .35rem;
-            color: #444;
+            margin-bottom: .3rem;
         }
 
         input {
             width: 100%;
-            padding: .75rem;
-            border: 1px solid #d0d0d0;
-            border-radius: 8px;
-            transition: .25s;
-            background: #fafafa;
-            font-size: 0.95rem;
+            padding: .7rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            transition: .3s;
         }
 
         input:focus {
             border-color: #ff6d00;
-            background: #fff;
-            box-shadow: 0 0 0 2px rgba(255,109,0,0.15);
             outline: none;
         }
 
-        /* Botão */
         button {
             width: 100%;
             background: #ff6d00;
             border: none;
-            padding: .8rem;
-            border-radius: 8px;
+            padding: .7rem;
+            border-radius: 6px;
             color: #fff;
-            font-weight: 700;
-            font-size: 1rem;
+            font-weight: bold;
             cursor: pointer;
-            margin-top: .3rem;
-            transition: .25s;
+            margin-top: .5rem;
+            transition: .3s;
         }
 
         button:hover {
-            background: #e05f00;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(255,109,0,0.25);
+            background: #e86000;
         }
 
-        /* Mensagem de erro */
         .erro {
-            color: #d62828;
-            margin-top: .7rem;
+            color: #d10000;
+            margin-top: .6rem;
             font-size: .9rem;
-            font-weight: 600;
         }
     </style>
 </head>
@@ -119,13 +100,13 @@
     <h2>Gestão de Cestas Básicas</h2>
 
     <div class="form-group">
-        <label for="email">E-mail</label>
-        <input id="email" type="email" placeholder="Digite seu e-mail">
+        <label for="username">Usuário</label>
+        <input id="username" type="text">
     </div>
 
     <div class="form-group">
         <label for="senha">Senha</label>
-        <input id="senha" type="password" placeholder="Digite sua senha">
+        <input id="senha" type="password">
     </div>
 
     <button onclick="fazerLogin()">Entrar</button>
@@ -135,8 +116,8 @@
 
 <script>
 async function fazerLogin() {
-    const email = document.getElementById("email").value.trim();
-    const senha = document.getElementById("senha").value.trim();
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("senha").value.trim();
     const msgErro = document.getElementById("msgErro");
 
     msgErro.textContent = "";
@@ -144,15 +125,22 @@ async function fazerLogin() {
     const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, senha })
+        body: JSON.stringify({ username, password })
     });
 
-    const data = await res.json();
+    let data = {};
+    try {
+        data = await res.json();
+    } catch (e) {
+        msgErro.textContent = "Erro inesperado no servidor.";
+        return;
+    }
 
-    if (data.status === "sucesso") {
+    if (data.status === "success") {
+        localStorage.setItem("jwt_token", data.token);
         window.location.href = "/app";
     } else {
-        msgErro.textContent = data.msg;
+        msgErro.textContent = data.message || "Usuário ou senha inválidos.";
     }
 }
 </script>
