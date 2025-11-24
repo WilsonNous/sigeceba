@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login • Gestão de Cestas Básicas</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+            font-family: "Inter", Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .login-container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 10px;
+            max-width: 380px;
+            width: 90%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            animation: fadeIn .6s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-container img {
+            width: 110px;
+            margin-bottom: 1rem;
+        }
+
+        h2 {
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            color: #444;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: .3rem;
+        }
+
+        input {
+            width: 100%;
+            padding: .7rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            transition: .3s;
+        }
+
+        input:focus {
+            border-color: #ff6d00;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            background: #ff6d00;
+            border: none;
+            padding: .7rem;
+            border-radius: 6px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: .5rem;
+            transition: .3s;
+        }
+
+        button:hover {
+            background: #e86000;
+        }
+
+        .erro {
+            color: #d10000;
+            margin-top: .6rem;
+            font-size: .9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <img src="/static/imagens/logo_maisdecristo_b2.jpg">
+
+    <h2>Gestão de Cestas Básicas</h2>
+
+    <div class="form-group">
+        <label for="email">E-mail</label>
+        <input id="email" type="email">
+    </div>
+
+    <div class="form-group">
+        <label for="senha">Senha</label>
+        <input id="senha" type="password">
+    </div>
+
+    <button onclick="fazerLogin()">Entrar</button>
+
+    <p id="msgErro" class="erro"></p>
+</div>
+
+<script>
+async function fazerLogin() {
+    const email = document.getElementById("email").value.trim();
+    const senha = document.getElementById("senha").value.trim();
+    const msgErro = document.getElementById("msgErro");
+
+    msgErro.textContent = "";
+
+    const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, senha })
+    });
+
+    const data = await res.json();
+
+    if (data.status === "sucesso") {
+        window.location.href = "/app";
+    } else {
+        msgErro.textContent = data.msg;
+    }
+}
+</script>
+
+</body>
+</html>
