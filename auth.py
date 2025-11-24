@@ -1,7 +1,7 @@
 # auth.py
 from flask import Blueprint, request, session, jsonify
 import bcrypt
-from database import conectar
+from database import get_db_connection
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -14,7 +14,7 @@ def login():
     email = data.get("email")
     senha = data.get("senha")
 
-    conn = conectar()
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -26,10 +26,18 @@ def login():
 
     user = cursor.fetchone()
 
+    cursor.close()
+    conn.close()
+
     if not user:
         return jsonify({"status": "erro", "msg": "Usuário não encontrado"}), 401
 
-    id, nome, email, senha_hash, tipo_usuario, ativo = user
+    id = user["id"]
+    nome = user["nome"]
+    email_db = user["email"]
+    senha_hash = user["senha_hash"]
+    tipo_usuario = user["tipo_usuario"]
+    ativo = user["ativo"]
 
     if not ativo:
         return jsonify({"status": "erro", "msg": "Usuário inativo"}), 401
@@ -41,7 +49,7 @@ def login():
     # Criar sessão
     session["user_id"] = id
     session["nome"] = nome
-    session["email"] = email
+    session["email"] = email_db
     session["tipo_usuario"] = tipo_usuario
 
     return jsonify({"status": "sucesso", "msg": "Login realizado"}), 200
