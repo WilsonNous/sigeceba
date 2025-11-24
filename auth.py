@@ -1,64 +1,48 @@
 # auth.py
-from flask import Blueprint, request, session, jsonify
-import bcrypt
-from database import get_db_connection
+import os
+from flask import Blueprint, request, jsonify
+from werkzeug.security import check_password_hash
 
-auth_bp = Blueprint('auth', __name__)
+try:
+    from flask_jwt_extended import create_access_token
+except Exception:
+    def create_access_token(identity): return f"MOCK_TOKEN_FOR_{identity}"
 
-# ===========================================
-# LOGIN
-# ===========================================
-@auth_bp.route("/login", methods=["POST"])
+auth_bp = Blueprint('auth_bp', __name__)
+
+ADMIN_USER = os.getenv("ADMIN_USER", "Adminis")
+ADMIN_PASSWORD_HASH = os.getenv("ADMIN_PASSWORD_HASH", None)
+
+@auth_bp.route('/login', methods=['POST'])
 def login():
-    data = request.json
-    email = data.get("email")
-    senha = data.get("senha")
+    data = request.get_json()
+    if not data:
+        return jsonify({'status': 'failed', 'message': 'Nenhum dado foi fornecido'}), 400
 
-    conn = get_db_connection()
-    cursor = conn.cursor()
+    username = data.get('username')
+    password = data.get('password')
 
-    cursor.execute("""
-        SELECT id, nome, email, senha_hash, tipo_usuario, ativo
-        FROM usuarios
-        WHERE email = %s
-        LIMIT 1
-    """, (email,))
+    if not username or not password:
+        return jsonify({'status': 'failed', 'message': 'Usuário e senha são obrigatórios'}), 400
 
-    user = cursor.fetchone()
+    # -----------------------------
+    # LOGIN VIA VARIÁVEIS DE AMBIENTE
+    # -----------------------------
+    if username == ADMIN_USER:
+        if ADMIN_PASSWORD_HASH:
+            # senha com hash
+            if not check_password_hash(ADMIN_PASSWORD_HASH, password):
+                return jsonify({'status': 'failed', 'message': 'Senha inválida'}), 401
+        else:
+            # fallback (mesmo comportamento do CRM)
+            if password != "s3cr3ty":
+                return jsonify({'status': 'failed', 'message': 'Senha inválida'}), 401
 
-    cursor.close()
-    conn.close()
+        token = create_access_token(identity={'username': username, 'role': 'Admin'})
+        return jsonify({
+            'status': 'success',
+            'message': 'Login bem-sucedido!',
+            'token': token
+        }), 200
 
-    if not user:
-        return jsonify({"status": "erro", "msg": "Usuário não encontrado"}), 401
-
-    id = user["id"]
-    nome = user["nome"]
-    email_db = user["email"]
-    senha_hash = user["senha_hash"]
-    tipo_usuario = user["tipo_usuario"]
-    ativo = user["ativo"]
-
-    if not ativo:
-        return jsonify({"status": "erro", "msg": "Usuário inativo"}), 401
-
-    # Validar senha com bcrypt
-    if not bcrypt.checkpw(senha.encode("utf-8"), senha_hash.encode("utf-8")):
-        return jsonify({"status": "erro", "msg": "Senha incorreta"}), 401
-
-    # Criar sessão
-    session["user_id"] = id
-    session["nome"] = nome
-    session["email"] = email_db
-    session["tipo_usuario"] = tipo_usuario
-
-    return jsonify({"status": "sucesso", "msg": "Login realizado"}), 200
-
-
-# ===========================================
-# LOGOUT
-# ===========================================
-@auth_bp.route("/logout", methods=["POST"])
-def logout():
-    session.clear()
-    return jsonify({"status": "sucesso", "msg": "Logout realizado"}), 200
+    return jsonify({'status': 'failed', 'message': 'Usuário inválido'}), 401
