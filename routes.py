@@ -14,7 +14,7 @@ try:
         get_dashboard_data,
         salvar_familia,
         listar_familias,
-        salvar_entregas,
+        salvar_entrega,
         listar_entregas,
         registrar_entrada_estoque,
         get_saldo_estoque,
