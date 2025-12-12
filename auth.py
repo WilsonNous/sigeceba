@@ -1,80 +1,63 @@
 # auth.py
+from flask import Blueprint, request, jsonify, session
 import os
-from flask import request, jsonify, session
-from werkzeug.security import check_password_hash
 
-# Tentativa de importar JWT real
-try:
-    from flask_jwt_extended import create_access_token
-    USING_REAL_JWT = True
-except Exception:
-    USING_REAL_JWT = False
-
-    # Mock simples caso não esteja usando flask_jwt_extended
-    def create_access_token(identity):
-        return f"MOCK_TOKEN_FOR_{identity['username']}"
+auth_bp = Blueprint("auth", __name__)
 
 # -----------------------------------------------------
-# CONFIGURAÇÃO DE USUÁRIO ADMIN
+# CONFIGURAÇÃO DO USUÁRIO ADMIN (simples)
 # -----------------------------------------------------
 
 ADMIN_USER = os.getenv("ADMIN_USER", "Adminis")
-ADMIN_PASSWORD_HASH = os.getenv("ADMIN_PASSWORD_HASH", None)
-ADMIN_PASSWORD_CLEAR = os.getenv("ADMIN_PASSWORD_CLEAR", "s3cr3ty")  # fallback simples
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "s3cr3ty")  # senha padrão simples
 
 
 # -----------------------------------------------------
-# BLUEPRINT DE AUTENTICAÇÃO
+# LOGIN OFICIAL: /api/login
 # -----------------------------------------------------
 
-from flask import Blueprint
-auth_bp = Blueprint("auth", __name__)
-
-
-@auth_bp.route('/login', methods=['POST'])
+@auth_bp.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json()
 
     if not data:
-        return jsonify({'status': 'erro', 'msg': 'Nenhum dado enviado.'}), 400
+        return jsonify({'status': 'error', 'message': 'Nenhum dado enviado.'}), 400
 
     username = data.get("username")
     password = data.get("password")
 
     if not username or not password:
-        return jsonify({'status': 'erro', 'msg': 'Informe usuário e senha.'}), 400
+        return jsonify({'status': 'error', 'message': 'Informe usuário e senha.'}), 400
 
     # -----------------------------------------------------
     # VALIDAÇÃO DO ADMIN
     # -----------------------------------------------------
     if username != ADMIN_USER:
-        return jsonify({'status': 'erro', 'msg': 'Usuário inválido.'}), 401
+        return jsonify({'status': 'error', 'message': 'Usuário inválido.'}), 401
 
-    # Se existe hash, validar com bcrypt
-    if ADMIN_PASSWORD_HASH:
-        if not check_password_hash(ADMIN_PASSWORD_HASH, password):
-            return jsonify({'status': 'erro', 'msg': 'Senha inválida.'}), 401
-    else:
-        # fallback simples para Render
-        if password != ADMIN_PASSWORD_CLEAR:
-            return jsonify({'status': 'erro', 'msg': 'Senha inválida.'}), 401
+    if password != ADMIN_PASSWORD:
+        return jsonify({'status': 'error', 'message': 'Senha incorreta.'}), 401
 
     # -----------------------------------------------------
-    # 🎉 LOGIN OK — CRIAR TOKEN (mock ou real)
+    # SESSÃO — ESSENCIAL PARA PROTEGER /app
     # -----------------------------------------------------
-    token = create_access_token(identity={'username': username, 'role': 'admin'})
+    session["user_id"] = 1
+    session["username"] = username
+    session["tipo_usuario"] = "admin"
 
-    # -----------------------------------------------------
-    # 🎉 SALVAR SESSÃO PARA ROTAS /app (GET)
-    # -----------------------------------------------------
-    session["logado"] = True
-    session["usuario"] = username
-    session["role"] = "admin"
-
-    print(f"🔐 Usuário {username} logado. Sessão criada.")
+    print(f"🔐 Usuário {username} logado. Sessão criada com sucesso.")
 
     return jsonify({
-        'status': 'sucesso',
-        'msg': 'Login bem-sucedido!',
-        'token': token
+        'status': 'success',
+        'message': 'Login bem-sucedido!'
     }), 200
+
+
+# -----------------------------------------------------
+# LOGOUT
+# -----------------------------------------------------
+
+@auth_bp.route('/api/logout', methods=['POST'])
+def logout():
+    session.clear()
+    return jsonify({'status': 'success', 'message': 'Logout realizado.'}), 200
