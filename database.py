@@ -105,17 +105,57 @@ def init_db():
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """
 
+
+
+    create_insumos = """
+    CREATE TABLE IF NOT EXISTS cesta_insumos (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        nome VARCHAR(255) NOT NULL,
+        unidade VARCHAR(20) NOT NULL DEFAULT 'un',
+        ativo TINYINT(1) NOT NULL DEFAULT 1,
+        data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uk_insumo_nome (nome)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """
+
+    create_kits = """
+    CREATE TABLE IF NOT EXISTS cesta_kits (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        nome VARCHAR(255) NOT NULL,
+        descricao VARCHAR(255) NULL,
+        ativo TINYINT(1) NOT NULL DEFAULT 1,
+        data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uk_kit_nome (nome)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """
+
+    create_kit_itens = """
+    CREATE TABLE IF NOT EXISTS cesta_kit_itens (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        kit_id INT NOT NULL,
+        insumo_id INT NOT NULL,
+        quantidade DECIMAL(10,2) NOT NULL DEFAULT 1,
+        data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY uk_kit_insumo (kit_id, insumo_id),
+        CONSTRAINT fk_kit_itens_kit FOREIGN KEY (kit_id) REFERENCES cesta_kits(id),
+        CONSTRAINT fk_kit_itens_insumo FOREIGN KEY (insumo_id) REFERENCES cesta_insumos(id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """
+    
     try:
         with get_db_cursor(commit=True) as cursor:
             cursor.execute(create_familias)
             cursor.execute(create_membros)
             cursor.execute(create_movimento)
             cursor.execute(create_estoque)
+            cursor.execute(create_insumos)
+            cursor.execute(create_kits)
+            cursor.execute(create_kit_itens)
         logging.info("✅ Tabelas verificadas/criadas com sucesso.")
     except Exception as e:
         logging.error(f"❌ Erro ao inicializar tabelas: {e}")
         raise
-
+        
 # === FUNÇÕES DE NEGÓCIO ===
 
 def salvar_familia(data):
@@ -373,3 +413,107 @@ def get_dashboard_data():
             "cestasEstoque": 0,
             "ultimasEntregas": []
         }
+
+# =========================
+# INSUMOS
+# =========================
+
+def criar_insumo(nome, unidade):
+    sql = "INSERT INTO cesta_insumos (nome, unidade) VALUES (%s, %s)"
+    try:
+        with get_db_cursor(commit=True) as cursor:
+            cursor.execute(sql, [nome.strip(), unidade.strip()])
+            return cursor.lastrowid
+    except Exception as e:
+        logging.error(f"Erro ao criar insumo: {e}")
+        return None
+
+def listar_insumos():
+    sql = "SELECT id, nome, unidade, ativo FROM cesta_insumos ORDER BY nome"
+    try:
+        with get_db_cursor() as cursor:
+            cursor.execute(sql)
+            return cursor.fetchall()
+    except Exception as e:
+        logging.error(f"Erro ao listar insumos: {e}")
+        return []
+
+# =========================
+# KITS
+# =========================
+
+def criar_kit(nome, descricao=None):
+    sql = "INSERT INTO cesta_kits (nome, descricao) VALUES (%s, %s)"
+    try:
+        with get_db_cursor(commit=True) as cursor:
+            cursor.execute(sql, [nome.strip(), (descricao or None)])
+            return cursor.lastrowid
+    except Exception as e:
+        logging.error(f"Erro ao criar kit: {e}")
+        return None
+
+def listar_kits():
+    sql = "SELECT id, nome, descricao, ativo FROM cesta_kits ORDER BY nome"
+    try:
+        with get_db_cursor() as cursor:
+            cursor.execute(sql)
+            return cursor.fetchall()
+    except Exception as e:
+        logging.error(f"Erro ao listar kits: {e}")
+        return []
+
+def adicionar_item_kit(kit_id, insumo_id, quantidade):
+    """
+    Se já existir (kit_id, insumo_id) atualiza quantidade.
+    """
+    sql = """
+    INSERT INTO cesta_kit_itens (kit_id, insumo_id, quantidade)
+    VALUES (%s, %s, %s)
+    ON DUPLICATE KEY UPDATE quantidade = VALUES(quantidade)
+    """
+    try:
+        with get_db_cursor(commit=True) as cursor:
+            cursor.execute(sql, [kit_id, insumo_id, quantidade])
+        return True
+    except Exception as e:
+        logging.error(f"Erro ao adicionar item no kit: {e}")
+        return False
+
+def listar_itens_do_kit(kit_id):
+    sql = """
+    SELECT
+        i.id,
+        ii.id AS item_id,
+        i.nome,
+        i.unidade,
+        ii.quantidade
+    FROM cesta_kit_itens ii
+    JOIN cesta_insumos i ON i.id = ii.insumo_id
+    WHERE ii.kit_id = %s
+    ORDER BY i.nome
+    """
+    try:
+        with get_db_cursor() as cursor:
+            cursor.execute(sql, [kit_id])
+            rows = cursor.fetchall()
+            # normaliza para o front:
+            return [{
+                "item_id": r["item_id"],
+                "insumo_id": r["id"],
+                "insumo_nome": r["nome"],
+                "unidade": r["unidade"],
+                "quantidade": float(r["quantidade"])
+            } for r in rows]
+    except Exception as e:
+        logging.error(f"Erro ao listar itens do kit: {e}")
+        return []
+
+def remover_item_kit(item_id):
+    sql = "DELETE FROM cesta_kit_itens WHERE id = %s"
+    try:
+        with get_db_cursor(commit=True) as cursor:
+            cursor.execute(sql, [item_id])
+        return True
+    except Exception as e:
+        logging.error(f"Erro ao remover item do kit: {e}")
+        return False
