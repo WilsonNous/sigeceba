@@ -608,3 +608,56 @@ if (kitSelect) {
 document.addEventListener('DOMContentLoaded', () => {
     carregarDashboard();
 });
+
+// =========================
+// LOGOUT + INATIVIDADE (15 min)
+// =========================
+const IDLE_MINUTES = 15;
+const IDLE_TIMEOUT_MS = IDLE_MINUTES * 60 * 1000;
+
+let idleTimer = null;
+
+async function logout() {
+  try {
+    // chama backend para limpar session
+    await fetch("/api/logout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({})
+    });
+  } catch (e) {
+    // mesmo que falhe, segue pra tela de login
+    console.warn("Falha no logout (fetch). Redirecionando mesmo assim.", e);
+  } finally {
+    // limpa qualquer coisa local se você usar no futuro
+    try { sessionStorage.removeItem("auth_token"); } catch (_) {}
+    window.location.href = "/";
+  }
+}
+
+function resetIdleTimer() {
+  if (idleTimer) clearTimeout(idleTimer);
+
+  idleTimer = setTimeout(() => {
+    alert("Sessão expirada por inatividade. Você será desconectado.");
+    logout();
+  }, IDLE_TIMEOUT_MS);
+}
+
+function initIdleLogout() {
+  // eventos que contam como atividade
+  const events = ["mousemove", "mousedown", "keydown", "scroll", "touchstart", "click"];
+
+  events.forEach(evt => {
+    window.addEventListener(evt, resetIdleTimer, { passive: true });
+  });
+
+  // inicia o timer ao carregar
+  resetIdleTimer();
+}
+
+// inicializa junto com o dashboard
+document.addEventListener("DOMContentLoaded", () => {
+  initIdleLogout();
+});
