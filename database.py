@@ -1,28 +1,30 @@
 # database.py
+import os
 import pymysql
 import logging
 from contextlib import contextmanager
 
-# Configuração de logging
 logging.basicConfig(level=logging.INFO)
 
-# Configuração do banco de dados
+# =========================
+# CONFIG DO BANCO (ENV FIRST)
+# =========================
 DB_CONFIG = {
-    'host': '108.167.132.58',
-    'user': 'noust785_admin',
-    'password': 'M@st3rk3y',
-    'db': 'noust785_crm_mdc_canasvieiras',
-    'charset': 'utf8mb4',
-    'cursorclass': pymysql.cursors.DictCursor
+    "host": os.getenv("DB_HOST", "127.0.0.1"),
+    "user": os.getenv("DB_USER", "root"),
+    "password": os.getenv("DB_PASSWORD", ""),
+    "db": os.getenv("DB_NAME", ""),
+    "port": int(os.getenv("DB_PORT", "3306")),
+    "charset": "utf8mb4",
+    "cursorclass": pymysql.cursors.DictCursor,
 }
 
 def get_db_connection():
     """Conecta ao banco de dados MySQL"""
     try:
-        conn = pymysql.connect(**DB_CONFIG)
-        return conn
+        return pymysql.connect(**DB_CONFIG)
     except pymysql.MySQLError as e:
-        logging.error(f"Erro ao conectar ao banco de dados MySQL: {e}")
+        logging.error(f"Erro ao conectar ao MySQL: {e}")
         raise
 
 @contextmanager
@@ -36,7 +38,10 @@ def get_db_cursor(commit=False):
         if commit:
             conn.commit()
     except Exception as e:
-        conn.rollback()
+        try:
+            conn.rollback()
+        except Exception:
+            pass
         logging.error(f"Erro na operação de banco de dados: {e}")
         raise
     finally:
@@ -44,9 +49,12 @@ def get_db_cursor(commit=False):
             cursor.close()
         conn.close()
 
-# === INICIALIZAÇÃO DO BANCO ===
+# =========================
+# INIT DB
+# =========================
 def init_db():
     """Cria as tabelas do sistema de cestas básicas, se não existirem"""
+
     create_familias = """
     CREATE TABLE IF NOT EXISTS familias_cestas (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -105,8 +113,9 @@ def init_db():
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """
 
-
-
+    # =========================
+    # INSUMOS / KITS
+    # =========================
     create_insumos = """
     CREATE TABLE IF NOT EXISTS cesta_insumos (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -137,11 +146,13 @@ def init_db():
         quantidade DECIMAL(10,2) NOT NULL DEFAULT 1,
         data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE KEY uk_kit_insumo (kit_id, insumo_id),
-        CONSTRAINT fk_kit_itens_kit FOREIGN KEY (kit_id) REFERENCES cesta_kits(id),
+        CONSTRAINT fk_kit_itens_kit FOREIGN KEY (kit_id) REFERENCES cesta_kits(id)
+            ON DELETE CASCADE,
         CONSTRAINT fk_kit_itens_insumo FOREIGN KEY (insumo_id) REFERENCES cesta_insumos(id)
+            ON DELETE RESTRICT
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """
-    
+
     try:
         with get_db_cursor(commit=True) as cursor:
             cursor.execute(create_familias)
@@ -151,15 +162,16 @@ def init_db():
             cursor.execute(create_insumos)
             cursor.execute(create_kits)
             cursor.execute(create_kit_itens)
+
         logging.info("✅ Tabelas verificadas/criadas com sucesso.")
     except Exception as e:
         logging.error(f"❌ Erro ao inicializar tabelas: {e}")
         raise
-        
-# === FUNÇÕES DE NEGÓCIO ===
 
+# =========================
+# FAMÍLIAS / ENTREGAS
+# =========================
 def salvar_familia(data):
-    """Salva uma nova família na tabela familias_cestas"""
     sql = """
     INSERT INTO familias_cestas (
         numero_pessoas, numero_filhos, renda_mensal_familia,
@@ -170,13 +182,15 @@ def salvar_familia(data):
     try:
         with get_db_cursor(commit=True) as cursor:
             cursor.execute(sql, [
-                data['numeroPessoas'],
-                data['numeroFilhos'],
-                None,
-                None,
-                None,
-                None,
-                f"Responsável: {data['responsavelNome']}, CPF: {data['responsavelCPF']}, Nascimento: {data['responsavelNascimento']}, Gênero: {data['responsavelGenero']}, Endereço: {data['responsavelEndereco']}, Telefone: {data.get('telefone', '')}",
+                data.get("numeroPessoas"),
+                data.get("numeroFilhos", 0),
+                None, None, None, None,
+                f"Responsável: {data.get('responsavelNome')}, "
+                f"CPF: {data.get('responsavelCPF')}, "
+                f"Nascimento: {data.get('responsavelNascimento')}, "
+                f"Gênero: {data.get('responsavelGenero')}, "
+                f"Endereço: {data.get('responsavelEndereco')}, "
+                f"Telefone: {data.get('telefone', '')}",
                 None
             ])
             return cursor.lastrowid
@@ -185,7 +199,6 @@ def salvar_familia(data):
         return None
 
 def listar_familias(query=None):
-    """Lista famílias com filtro opcional"""
     sql = """
     SELECT f.id, f.numero_pessoas, f.numero_filhos, f.observacoes, f.data_cadastro, f.ativo
     FROM familias_cestas f
@@ -202,26 +215,27 @@ def listar_familias(query=None):
             cursor.execute(sql, params)
             familias = []
             for row in cursor.fetchall():
-                # Extrair dados da observação
                 nome = "Nome não registrado"
                 cpf = "—"
                 telefone = "—"
-                if row['observacoes']:
-                    for line in row['observacoes'].split(', '):
-                        if line.startswith('Responsável:'):
-                            nome = line.replace('Responsável: ', '').split(',')[0]
-                        elif 'CPF:' in line:
-                            cpf = line.split('CPF: ')[1].split(',')[0]
-                        elif 'Telefone:' in line:
-                            telefone = line.split('Telefone: ')[1].split(',')[0]
+
+                if row.get("observacoes"):
+                    for part in row["observacoes"].split(", "):
+                        if part.startswith("Responsável:"):
+                            nome = part.replace("Responsável: ", "").strip()
+                        elif part.startswith("CPF:"):
+                            cpf = part.replace("CPF: ", "").strip()
+                        elif part.startswith("Telefone:"):
+                            telefone = part.replace("Telefone: ", "").strip()
 
                 familias.append({
-                    'id': row['id'],
-                    'responsavel_nome': nome,
-                    'cpf': cpf,
-                    'telefone': telefone,
-                    'numero_pessoas': row['numero_pessoas'],
-                    'ultimaEntrega': '—'
+                    "id": row["id"],
+                    "responsavel_nome": nome,
+                    "cpf": cpf,
+                    "telefone": telefone,
+                    "numero_pessoas": row["numero_pessoas"],
+                    "numero_filhos": row["numero_filhos"],
+                    "ultimaEntrega": "—",
                 })
             return familias
     except Exception as e:
@@ -229,7 +243,6 @@ def listar_familias(query=None):
         return []
 
 def salvar_entrega(data):
-    """Registra uma entrega na tabela movimento_cestas"""
     sql = """
     INSERT INTO movimento_cestas (
         id_familia, data_entrega, quantidade_cestas,
@@ -239,10 +252,10 @@ def salvar_entrega(data):
     try:
         with get_db_cursor(commit=True) as cursor:
             cursor.execute(sql, [
-                data['familiaEntrega'],
-                data['dataEntrega'],
-                data['quantidadeCestas'],
-                f"Entregue por: {data['responsavelEntrega']}",
+                data.get("familiaEntrega"),
+                data.get("dataEntrega"),
+                data.get("quantidadeCestas", 1),
+                f"Entregue por: {data.get('responsavelEntrega')}",
                 1
             ])
         return True
@@ -251,7 +264,6 @@ def salvar_entrega(data):
         return False
 
 def listar_entregas(filtro_data_inicio=None, filtro_data_fim=None, familia_id=None):
-    """Lista entregas com filtros"""
     sql = """
     SELECT m.data_entrega, m.quantidade_cestas, m.observacoes_entrega, f.id as familia_id
     FROM movimento_cestas m
@@ -275,18 +287,17 @@ def listar_entregas(filtro_data_inicio=None, filtro_data_fim=None, familia_id=No
             cursor.execute(sql, params)
             entregas = []
             for row in cursor.fetchall():
-                nome = "Família"
-                if row.get('observacoes_entrega'):
-                    for line in row['observacoes_entrega'].split(', '):
-                        if line.startswith('Entregue por:'):
-                            nome = line.replace('Entregue por: ', '')
-                            break
+                responsavel = "—"
+                obs = row.get("observacoes_entrega") or ""
+                if "Entregue por:" in obs:
+                    responsavel = obs.replace("Entregue por:", "").strip()
+
                 entregas.append({
-                    'data_entrega': row['data_entrega'].strftime('%d/%m/%Y'),
-                    'familia_nome': f"Família {row['familia_id']}",
-                    'responsavel': nome,
-                    'quantidade': row['quantidade_cestas'],
-                    'responsavel_entrega': nome
+                    "data_entrega": row["data_entrega"].strftime("%d/%m/%Y"),
+                    "familia_nome": f"Família {row['familia_id']}",
+                    "responsavel": responsavel,
+                    "quantidade": row["quantidade_cestas"],
+                    "responsavel_entrega": responsavel
                 })
             return entregas
     except Exception as e:
@@ -294,7 +305,6 @@ def listar_entregas(filtro_data_inicio=None, filtro_data_fim=None, familia_id=No
         return []
 
 def registrar_entrada_estoque(quantidade, fornecedor, observacoes):
-    """Registra entrada no estoque_cestas"""
     sql = """
     INSERT INTO estoque_cestas (data_entrada, quantidade_entrada, fornecedor, observacoes)
     VALUES (CURDATE(), %s, %s, %s)
@@ -308,20 +318,21 @@ def registrar_entrada_estoque(quantidade, fornecedor, observacoes):
         return False
 
 def get_saldo_estoque():
-    """Calcula saldo de cestas (entradas - saídas)"""
+    """Calcula saldo (entradas - saídas) - compatível com DictCursor"""
     try:
         with get_db_cursor() as cursor:
-            cursor.execute("SELECT COALESCE(SUM(quantidade_entrada), 0) FROM estoque_cestas")
-            total_entrada = cursor.fetchone()[0] or 0
-            cursor.execute("SELECT COALESCE(SUM(quantidade_cestas), 0) FROM movimento_cestas")
-            total_saida = cursor.fetchone()[0] or 0
-            return total_entrada - total_saida
+            cursor.execute("SELECT COALESCE(SUM(quantidade_entrada), 0) AS total FROM estoque_cestas")
+            total_entrada = cursor.fetchone()["total"] or 0
+
+            cursor.execute("SELECT COALESCE(SUM(quantidade_cestas), 0) AS total FROM movimento_cestas")
+            total_saida = cursor.fetchone()["total"] or 0
+
+            return int(total_entrada) - int(total_saida)
     except Exception as e:
         logging.error(f"Erro ao calcular saldo de estoque: {e}")
         return 0
 
 def listar_movimentacoes_estoque():
-    """Lista entradas e saídas de cestas"""
     try:
         with get_db_cursor() as cursor:
             cursor.execute("""
@@ -331,6 +342,7 @@ def listar_movimentacoes_estoque():
                 ORDER BY data_entrada DESC
             """)
             entradas = cursor.fetchall()
+
             cursor.execute("""
                 SELECT data_entrega as data, 0 as entrada, quantidade_cestas as saida,
                        'Entrega a família' as motivo, 'Sistema' as responsavel
@@ -342,60 +354,60 @@ def listar_movimentacoes_estoque():
             movimentacoes = []
             for e in entradas:
                 movimentacoes.append({
-                    'data_movimentacao': e['data'],
-                    'quantidade_entrada': e['entrada'],
-                    'quantidade_saida': e['saida'],
-                    'motivo_saida': e['motivo'],
-                    'responsavel': e['responsavel']
-                })
-            for s in saidas:
-                movimentacoes.append({
-                    'data_movimentacao': s['data'],
-                    'quantidade_entrada': s['entrada'],
-                    'quantidade_saida': s['saida'],
-                    'motivo_saida': s['motivo'],
-                    'responsavel': s['responsavel']
+                    "data_movimentacao": e["data"],
+                    "quantidade_entrada": e["entrada"],
+                    "quantidade_saida": e["saida"],
+                    "motivo_saida": e["motivo"],
+                    "responsavel": e["responsavel"]
                 })
 
-            movimentacoes.sort(key=lambda x: x['data_movimentacao'], reverse=True)
+            for s in saidas:
+                movimentacoes.append({
+                    "data_movimentacao": s["data"],
+                    "quantidade_entrada": s["entrada"],
+                    "quantidade_saida": s["saida"],
+                    "motivo_saida": s["motivo"],
+                    "responsavel": s["responsavel"]
+                })
+
+            movimentacoes.sort(key=lambda x: x["data_movimentacao"], reverse=True)
             return movimentacoes
     except Exception as e:
         logging.error(f"Erro ao listar movimentações: {e}")
         return []
 
 def get_dashboard_data():
-    """Retorna dados para o dashboard"""
     try:
         with get_db_cursor() as cursor:
-            cursor.execute("SELECT COUNT(*) as c FROM familias_cestas WHERE ativo = TRUE")
-            total_familias = cursor.fetchone()['c']
+            cursor.execute("SELECT COUNT(*) AS c FROM familias_cestas WHERE ativo = TRUE")
+            total_familias = cursor.fetchone()["c"]
 
             cursor.execute("""
-                SELECT COUNT(*) as c FROM movimento_cestas 
+                SELECT COALESCE(SUM(quantidade_cestas), 0) AS c
+                FROM movimento_cestas
                 WHERE data_entrega >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
             """)
-            cestas_mes = cursor.fetchone()['c']
+            cestas_mes = cursor.fetchone()["c"]
 
-            cursor.execute("SELECT COALESCE(SUM(numero_pessoas), 0) as c FROM familias_cestas WHERE ativo = TRUE")
-            total_pessoas = cursor.fetchone()['c']
+            cursor.execute("SELECT COALESCE(SUM(numero_pessoas), 0) AS c FROM familias_cestas WHERE ativo = TRUE")
+            total_pessoas = cursor.fetchone()["c"]
 
             cestas_estoque = get_saldo_estoque()
 
             cursor.execute("""
-                SELECT m.data_entrega, m.quantidade_cestas, f.id as familia_id
+                SELECT m.data_entrega, m.quantidade_cestas, f.id AS familia_id
                 FROM movimento_cestas m
                 JOIN familias_cestas f ON m.id_familia = f.id
                 ORDER BY m.data_entrega DESC LIMIT 3
             """)
             ultimas = cursor.fetchall()
-            ultimas_entregas = [
-                {
-                    'data': row['data_entrega'].strftime('%d/%m/%Y'),
-                    'familia': f"Família {row['familia_id']}",
-                    'responsavel': 'Beneficiário',
-                    'quantidade': row['quantidade_cestas']
-                } for row in ultimas
-            ]
+
+            ultimas_entregas = [{
+                "data": row["data_entrega"].strftime("%d/%m/%Y"),
+                "familia": f"Família {row['familia_id']}",
+                "responsavel": "Beneficiário",
+                "quantidade": row["quantidade_cestas"]
+            } for row in ultimas]
 
         return {
             "totalFamilias": total_familias,
@@ -417,7 +429,6 @@ def get_dashboard_data():
 # =========================
 # INSUMOS
 # =========================
-
 def criar_insumo(nome, unidade):
     sql = "INSERT INTO cesta_insumos (nome, unidade) VALUES (%s, %s)"
     try:
@@ -441,7 +452,6 @@ def listar_insumos():
 # =========================
 # KITS
 # =========================
-
 def criar_kit(nome, descricao=None):
     sql = "INSERT INTO cesta_kits (nome, descricao) VALUES (%s, %s)"
     try:
@@ -463,9 +473,6 @@ def listar_kits():
         return []
 
 def adicionar_item_kit(kit_id, insumo_id, quantidade):
-    """
-    Se já existir (kit_id, insumo_id) atualiza quantidade.
-    """
     sql = """
     INSERT INTO cesta_kit_itens (kit_id, insumo_id, quantidade)
     VALUES (%s, %s, %s)
@@ -482,7 +489,7 @@ def adicionar_item_kit(kit_id, insumo_id, quantidade):
 def listar_itens_do_kit(kit_id):
     sql = """
     SELECT
-        i.id,
+        i.id AS insumo_id,
         ii.id AS item_id,
         i.nome,
         i.unidade,
@@ -496,10 +503,9 @@ def listar_itens_do_kit(kit_id):
         with get_db_cursor() as cursor:
             cursor.execute(sql, [kit_id])
             rows = cursor.fetchall()
-            # normaliza para o front:
             return [{
                 "item_id": r["item_id"],
-                "insumo_id": r["id"],
+                "insumo_id": r["insumo_id"],
                 "insumo_nome": r["nome"],
                 "unidade": r["unidade"],
                 "quantidade": float(r["quantidade"])
