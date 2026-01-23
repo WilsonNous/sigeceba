@@ -18,6 +18,9 @@ from database import (
     registrar_entrada_estoque,
     get_saldo_estoque,
     listar_movimentacoes_estoque
+    criar_insumo, listar_insumos,
+    criar_kit, listar_kits,
+    adicionar_item_kit, listar_itens_do_kit, remover_item_kit
 )
 
 print("✅ Banco importado!")
@@ -185,6 +188,93 @@ def movimentacoes_estoque_route():
 def ping():
     return jsonify({"status": "ok"}), 200
 
+# ==============================
+# INSUMOS (API)
+# ==============================
+
+@app.route('/insumos', methods=['GET'])
+@login_required
+def insumos_listar():
+    return jsonify(listar_insumos()), 200
+
+@app.route('/insumos', methods=['POST'])
+@login_required
+def insumos_criar():
+    data = request.get_json() or {}
+    nome = (data.get("nome") or "").strip()
+    unidade = (data.get("unidade") or "").strip()
+
+    if not nome or not unidade:
+        return jsonify({"error": "Informe nome e unidade."}), 400
+
+    new_id = criar_insumo(nome, unidade)
+    if not new_id:
+        return jsonify({"error": "Erro ao criar insumo (talvez já exista)."}), 500
+
+    return jsonify({"message": "Insumo criado!", "id": new_id}), 201
+
+
+# ==============================
+# KITS (API)
+# ==============================
+
+@app.route('/kits', methods=['GET'])
+@login_required
+def kits_listar():
+    return jsonify(listar_kits()), 200
+
+@app.route('/kits', methods=['POST'])
+@login_required
+def kits_criar():
+    data = request.get_json() or {}
+    nome = (data.get("nome") or "").strip()
+    descricao = (data.get("descricao") or "").strip()
+
+    if not nome:
+        return jsonify({"error": "Informe o nome do kit."}), 400
+
+    new_id = criar_kit(nome, descricao if descricao else None)
+    if not new_id:
+        return jsonify({"error": "Erro ao criar kit (talvez já exista)."}), 500
+
+    return jsonify({"message": "Kit criado!", "id": new_id}), 201
+
+
+@app.route('/kits/<int:kit_id>/itens', methods=['GET'])
+@login_required
+def kit_itens_listar(kit_id):
+    return jsonify(listar_itens_do_kit(kit_id)), 200
+
+@app.route('/kits/<int:kit_id>/itens', methods=['POST'])
+@login_required
+def kit_itens_adicionar(kit_id):
+    data = request.get_json() or {}
+    insumo_id = data.get("insumo_id")
+    quantidade = data.get("quantidade")
+
+    if not insumo_id or quantidade is None:
+        return jsonify({"error": "Informe insumo_id e quantidade."}), 400
+
+    try:
+        quantidade = float(quantidade)
+        if quantidade <= 0:
+            return jsonify({"error": "Quantidade deve ser > 0."}), 400
+    except Exception:
+        return jsonify({"error": "Quantidade inválida."}), 400
+
+    ok = adicionar_item_kit(kit_id, int(insumo_id), quantidade)
+    if not ok:
+        return jsonify({"error": "Erro ao adicionar item no kit."}), 500
+
+    return jsonify({"message": "Item adicionado/atualizado no kit!"}), 201
+
+@app.route('/kits/itens/<int:item_id>', methods=['DELETE'])
+@login_required
+def kit_itens_remover(item_id):
+    ok = remover_item_kit(item_id)
+    if not ok:
+        return jsonify({"error": "Erro ao remover item."}), 500
+    return jsonify({"message": "Item removido!"}), 200
 
 # ==============================
 # MAIN
