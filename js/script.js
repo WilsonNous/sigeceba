@@ -661,3 +661,96 @@ function initIdleLogout() {
 document.addEventListener("DOMContentLoaded", () => {
   initIdleLogout();
 });
+
+// =========================
+// LOGOUT + INATIVIDADE (15 min) + TOAST
+// =========================
+const IDLE_MINUTES = 15;
+const IDLE_TIMEOUT_MS = IDLE_MINUTES * 60 * 1000;
+
+let idleTimer = null;
+let countdownTimer = null;
+let idleDeadline = null;
+
+function showToast(message, subMessage = "", ms = 3500) {
+  const el = document.getElementById("toast");
+  if (!el) return;
+
+  el.innerHTML = `
+    <div>${message}</div>
+    ${subMessage ? `<small>${subMessage}</small>` : ""}
+  `;
+  el.classList.remove("hidden");
+
+  clearTimeout(el._hideTimer);
+  el._hideTimer = setTimeout(() => {
+    el.classList.add("hidden");
+  }, ms);
+}
+
+function formatMMSS(ms) {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const m = String(Math.floor(total / 60)).padStart(2, "0");
+  const s = String(total % 60).padStart(2, "0");
+  return `${m}:${s}`;
+}
+
+async function logout() {
+  try {
+    await fetch("/api/logout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({})
+    });
+  } catch (e) {
+    console.warn("Falha no logout (fetch). Redirecionando mesmo assim.", e);
+  } finally {
+    window.location.href = "/";
+  }
+}
+
+function stopIdleTimers() {
+  if (idleTimer) clearTimeout(idleTimer);
+  if (countdownTimer) clearInterval(countdownTimer);
+  idleTimer = null;
+  countdownTimer = null;
+}
+
+function startCountdown() {
+  clearInterval(countdownTimer);
+  countdownTimer = setInterval(() => {
+    const remaining = idleDeadline - Date.now();
+    // Só mostra quando estiver a menos de 1 minuto
+    if (remaining <= 60 * 1000 && remaining > 0) {
+      showToast(
+        "Sessão prestes a expirar por inatividade.",
+        `Saída automática em ${formatMMSS(remaining)}`
+      );
+    }
+  }, 1000);
+}
+
+function resetIdleTimer() {
+  stopIdleTimers();
+  idleDeadline = Date.now() + IDLE_TIMEOUT_MS;
+
+  // Reagenda logout
+  idleTimer = setTimeout(() => {
+    showToast("Sessão expirada por inatividade.", "Redirecionando para login...", 2000);
+    setTimeout(() => logout(), 800);
+  }, IDLE_TIMEOUT_MS);
+
+  // Começa contagem (só avisa no último minuto)
+  startCountdown();
+}
+
+function initIdleLogout() {
+  const events = ["mousemove", "mousedown", "keydown", "scroll", "touchstart", "click"];
+  events.forEach(evt => window.addEventListener(evt, resetIdleTimer, { passive: true }));
+  resetIdleTimer();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  initIdleLogout();
+});
