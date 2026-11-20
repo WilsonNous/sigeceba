@@ -43,16 +43,15 @@ from utils_auth import login_required
 # APP
 # ==============================
 app = Flask(__name__, template_folder='.')
-app.secret_key = os.getenv("SECRET_KEY", "segredo_muito_importante")
+app.secret_key = os.environ["SECRET_KEY"]
 print("✅ App criado / secret_key OK")
 
 # ==============================
 # INICIALIZAÇÃO DO BANCO
 # ==============================
-print("🔧 Inicializando tabelas...")
-with app.app_context():
-    init_db()
-print("✅ Banco pronto!")
+# Estrutura provisionada previamente na Enzonic.
+# Nunca executar DDL automatico no banco compartilhado com CRM.
+logger.info("Banco compartilhado: criacao automatica de tabelas desabilitada")
 
 # ==============================
 # BLUEPRINT AUTH
