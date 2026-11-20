@@ -263,7 +263,7 @@ def listar_familias(query=None):
         return []
 
 
-def salvar_entrega(data):
+def salvar_entrega(data, usuario_id):
     sql = """
     INSERT INTO movimento_cestas (
         id_familia, data_entrega, quantidade_cestas,
@@ -277,7 +277,7 @@ def salvar_entrega(data):
                 data.get("dataEntrega"),
                 data.get("quantidadeCestas", 1),
                 f"Entregue por: {data.get('responsavelEntrega')}",
-                1
+                usuario_id
             ])
         return True
     except Exception as e:
