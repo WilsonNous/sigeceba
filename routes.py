@@ -1,5 +1,5 @@
 # routes.py
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, session
 import logging
 import os
 
@@ -151,7 +151,7 @@ def registrar_entrega_route():
         if not data.get(field):
             return jsonify({"error": f"Campo obrigatório: {field}"}), 400
 
-    if salvar_entrega(data):
+    if salvar_entrega(data, session.get('user_id') or 0):
         return jsonify({"message": "Entrega registrada com sucesso!"}), 201
 
     return jsonify({"error": "Erro ao registrar entrega"}), 500
