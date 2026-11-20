@@ -99,7 +99,8 @@ def login():
         return jsonify({"status": "error", "message": "Senha incorreta."}), 401
 
     session["logado"] = True
-    session["user_id"] = 1
+    # Acesso institucional via ambiente nao corresponde a um ID da tabela usuarios.
+    session["user_id"] = 0
     session["username"] = username
     session["tipo_usuario"] = "administrador"
     session["role"] = "administrador"
