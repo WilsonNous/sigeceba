@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 print("✅ 1. Iniciando importação do banco...")
 
 from database import (
+    get_db_cursor,
     init_db,
     get_dashboard_data,
     salvar_familia,
@@ -58,6 +59,26 @@ logger.info("Banco compartilhado: criacao automatica de tabelas desabilitada")
 # ==============================
 # Se auth.py tem @auth_bp.route('/login'), vai virar /api/login automaticamente ✅
 app.register_blueprint(auth_bp, url_prefix="/api")
+
+# Seguranca de sessao: usuarios desativados perdem acesso imediatamente.
+@app.before_request
+def validar_sessao_operador():
+    if not session.get("logado") or session.get("role") != "operador":
+        return None
+    try:
+        with get_db_cursor() as cursor:
+            cursor.execute("SELECT ativo FROM cesta_usuarios WHERE id = %s", (session.get("user_id"),))
+            user = cursor.fetchone()
+        if not user or not user["ativo"]:
+            session.clear()
+            return jsonify({"error": "Usuario desativado. Entre novamente."}), 401
+    except Exception:
+        logger.exception("Falha ao verificar sessao de operador")
+        return jsonify({"error": "Nao foi possivel validar a sessao."}), 503
+
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SECURE"] = os.getenv("SESSION_COOKIE_SECURE", "true").lower() == "true"
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 # ==============================
 # ROTAS PÚBLICAS
