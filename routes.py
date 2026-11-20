@@ -125,11 +125,7 @@ def cadastrar_familia_route():
 
     required = [
         'responsavelNome',
-        'responsavelCPF',
-        'responsavelNascimento',
-        'responsavelGenero',
-        'responsavelEndereco',
-        'numeroPessoas'
+        'telefone'
     ]
 
     for field in required:
