@@ -23,6 +23,7 @@ function showSection(sectionId) {
   // Carregar dados específicos ao abrir a seção
   if (sectionId === 'dashboard') carregarDashboard();
   if (sectionId === 'usuarios') carregarUsuarios();
+    if (sectionId === 'estoque') carregarEstoque();
   if (sectionId === 'entregas') carregarFamiliasSelect();
   if (sectionId === 'consulta') buscarFamilias();
   if (sectionId === 'historico') {
@@ -695,6 +696,114 @@ function initIdleLogout() {
 
 document.addEventListener("DOMContentLoaded", initIdleLogout);
 
+
+
+// ============================
+// ENTRADA E HISTÓRICO DE ESTOQUE
+// ============================
+function formatarDataEstoque(value) {
+  if (!value) return '—';
+  const s = String(value);
+  const datePart = s.slice(0, 10);
+  const m = /^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(datePart);
+  return m ? m[3] + '/' + m[2] + '/' + m[1] : s;
+}
+
+async function carregarEstoque() {
+  const saldoEl = byId('saldoEstoqueDetalhe');
+  const tbody = qs('#tabelaMovimentacoesEstoque tbody');
+  if (tbody) {
+    tbody.replaceChildren();
+    const tr = tbody.insertRow();
+    const td = tr.insertCell();
+    td.colSpan = 5;
+    td.textContent = 'Carregando movimentações...';
+  }
+  try {
+    const [saldoRes, movRes] = await Promise.all([
+      fetch('/saldo-estoque', { credentials: 'same-origin' }),
+      fetch('/movimentacoes-estoque', { credentials: 'same-origin' })
+    ]);
+    if (saldoRes.status === 401 || movRes.status === 401) {
+      window.location.href = '/';
+      return;
+    }
+    if (!saldoRes.ok || !movRes.ok) throw new Error('Não foi possível consultar o estoque.');
+    const saldo = await saldoRes.json();
+    const movs = await movRes.json();
+    if (!Array.isArray(movs)) throw new Error('Formato inesperado do histórico.');
+    if (saldoEl) saldoEl.textContent = saldo.cestasEstoque ?? '—';
+    if (!tbody) return;
+    tbody.replaceChildren();
+    if (!movs.length) {
+      const tr = tbody.insertRow();
+      const td = tr.insertCell();
+      td.colSpan = 5;
+      td.textContent = 'Nenhuma movimentação registrada.';
+      return;
+    }
+    for (const mov of movs) {
+      const tr = tbody.insertRow();
+      const values = [
+        formatarDataEstoque(mov.data_movimentacao),
+        mov.quantidade_entrada ?? 0,
+        mov.quantidade_saida ?? 0,
+        mov.motivo_saida || '—',
+        mov.responsavel || '—'
+      ];
+      for (const value of values) {
+        const td = tr.insertCell();
+        td.textContent = String(value);
+      }
+    }
+  } catch (err) {
+    console.error('Erro ao consultar estoque:', err);
+    if (saldoEl) saldoEl.textContent = 'Indisponível';
+    if (tbody) {
+      tbody.replaceChildren();
+      const tr = tbody.insertRow();
+      const td = tr.insertCell();
+      td.colSpan = 5;
+      td.textContent = 'Não foi possível carregar o histórico. Tente novamente.';
+    }
+  }
+}
+
+const estoqueForm = byId('estoqueForm');
+if (estoqueForm) {
+  estoqueForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const quantidade = Number(byId('estoqueQuantidade')?.value);
+    const fornecedor = byId('estoqueFornecedor')?.value.trim() || '';
+    const observacoes = byId('estoqueObservacoes')?.value.trim() || '';
+    if (!Number.isSafeInteger(quantidade) || quantidade <= 0 || !fornecedor) {
+      alert('Informe uma quantidade inteira positiva e a origem/doador.');
+      return;
+    }
+    if (!confirm('Confirmar entrada de ' + quantidade + ' cesta(s) recebida(s) de ' + fornecedor + '?')) return;
+    const btn = byId('btnSalvarEstoque');
+    if (btn) btn.disabled = true;
+    try {
+      const response = await fetch('/registrar-entrada-estoque', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantidade, fornecedor, observacoes })
+      });
+      if (response.status === 401) { window.location.href = '/'; return; }
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || 'Não foi possível registrar a entrada.');
+      estoqueForm.reset();
+      alert('Entrada registrada com sucesso!');
+      await carregarEstoque();
+    } catch (err) {
+      console.error('Erro ao registrar entrada:', err);
+      alert(err.message || 'Falha ao registrar entrada. Verifique antes de tentar novamente para evitar duplicidade.');
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  });
+}
 
 // Administracao exclusiva do master
 async function inicializarPermissoes() {
