@@ -197,7 +197,7 @@ async function buscarFamilias() {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${f.responsavel_nome}</td>
-        <td>${f.cpf}</td>
+        <td>${f.cpf && f.cpf !== "—" ? f.cpf : "Não informado"}</td>
         <td>${f.telefone || '—'}</td>
         <td>${f.numero_pessoas}</td>
         <td>—</td>
@@ -259,7 +259,7 @@ async function carregarFamiliasSelect() {
     (familias || []).forEach(f => {
       const option = document.createElement('option');
       option.value = f.id;
-      option.textContent = `${f.responsavel_nome} (${f.cpf})`;
+      option.textContent = `${f.responsavel_nome} — ${f.telefone && f.telefone !== "—" ? f.telefone : "sem telefone"}`;
       select.appendChild(option);
     });
   } catch (err) {
