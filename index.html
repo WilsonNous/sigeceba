@@ -27,6 +27,7 @@
 
             <!-- ✅ NOVAS ABAS -->
             <li><button id="navInsumos" onclick="showSection('insumos')">Insumos</button></li>
+            <li><button id="navEstoque" onclick="showSection('estoque')">Estoque</button></li>
             <li><button id="navKits" onclick="showSection('kits')">Kits de Cesta</button></li>
             <li><button id="navUsuarios" type="button" style="display:none" onclick="showSection('usuarios')">Usuários</button></li>
             <li style="margin-left:auto;"><button id="btnLogout" class="btn-secondary" type="button" onclick="logout()">Sair</button></li>
@@ -256,6 +257,43 @@
                 <tbody></tbody>
             </table>
         </div>
+    </section>
+
+    <!-- Controle de entrada e movimentações de cestas prontas -->
+    <section id="estoque" class="form-section hidden">
+        <h2>Controle de Estoque de Cestas</h2>
+        <p>Registre aqui as cestas básicas prontas recebidas pelo ministério. O saldo considera as entradas menos as entregas registradas.</p>
+        <div class="info-cards" style="margin-top:1rem">
+            <div class="info-card"><h3>Saldo atual de cestas</h3><p id="saldoEstoqueDetalhe">—</p></div>
+        </div>
+        <form id="estoqueForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="estoqueQuantidade">Quantidade de cestas recebidas *</label>
+                    <input type="number" id="estoqueQuantidade" name="quantidade" min="1" step="1" required>
+                </div>
+                <div class="form-group">
+                    <label for="estoqueFornecedor">Origem / Doador *</label>
+                    <input type="text" id="estoqueFornecedor" name="fornecedor" maxlength="255" required placeholder="Ex.: Doação de membros">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="estoqueObservacoes">Observações (opcional)</label>
+                <textarea id="estoqueObservacoes" name="observacoes" rows="2" placeholder="Informações sobre o recebimento"></textarea>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="btn-success" id="btnSalvarEstoque">Registrar Entrada</button>
+                <button type="button" class="btn-secondary" onclick="carregarEstoque()">Atualizar Saldo e Histórico</button>
+            </div>
+        </form>
+        <h3>Histórico de movimentações</h3>
+        <div class="table-container">
+            <table id="tabelaMovimentacoesEstoque">
+                <thead><tr><th>Data</th><th>Entrada</th><th>Saída</th><th>Motivo / Origem</th><th>Responsável</th></tr></thead>
+                <tbody><tr><td colspan="5">Abra a aba para carregar o histórico.</td></tr></tbody>
+            </table>
+        </div>
+        <p><small>Esta área controla cestas prontas. O cadastro de insumos e a composição de kits não alteram automaticamente o saldo.</small></p>
     </section>
 
     <!-- ✅ INSUMOS -->
