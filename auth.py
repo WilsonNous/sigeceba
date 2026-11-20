@@ -56,7 +56,7 @@ def login():
         with get_db_cursor() as cursor:
             cursor.execute(
                 """
-                SELECT id, nome, email, senha, tipo_usuario, ativo
+                SELECT id, nome, email, senha, tipo_usuario
                 FROM usuarios
                 WHERE nome = %s OR email = %s
                 LIMIT 1
@@ -66,9 +66,6 @@ def login():
             user = cursor.fetchone()
 
         if user:
-            if int(user.get("ativo") or 0) != 1:
-                return jsonify({"status": "error", "message": "Usuário inativo."}), 401
-
             senha_db = user.get("senha") or ""
             if not _check_password(password, senha_db):
                 return jsonify({"status": "error", "message": "Senha inválida."}), 401
