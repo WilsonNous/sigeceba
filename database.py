@@ -191,14 +191,14 @@ def salvar_familia(data):
     try:
         with get_db_cursor(commit=True) as cursor:
             cursor.execute(sql, [
-                data.get("numeroPessoas"),
-                data.get("numeroFilhos", 0),
+                data.get("numeroPessoas") or 1,
+                data.get("numeroFilhos") or 0,
                 None, None, None, None,
                 f"Responsável: {data.get('responsavelNome')}, "
-                f"CPF: {data.get('responsavelCPF')}, "
-                f"Nascimento: {data.get('responsavelNascimento')}, "
-                f"Gênero: {data.get('responsavelGenero')}, "
-                f"Endereço: {data.get('responsavelEndereco')}, "
+                f"CPF: {data.get('responsavelCPF') or ''}, "
+                f"Nascimento: {data.get('responsavelNascimento') or ''}, "
+                f"Gênero: {data.get('responsavelGenero') or ''}, "
+                f"Endereço: {data.get('responsavelEndereco') or ''}, "
                 f"Telefone: {data.get('telefone', '')}",
                 None
             ])
