@@ -28,10 +28,29 @@
             <!-- ✅ NOVAS ABAS -->
             <li><button id="navInsumos" onclick="showSection('insumos')">Insumos</button></li>
             <li><button id="navKits" onclick="showSection('kits')">Kits de Cesta</button></li>
+            <li><button id="navUsuarios" type="button" style="display:none" onclick="showSection('usuarios')">Usuários</button></li>
             <li style="margin-left:auto;"><button id="btnLogout" class="btn-secondary" type="button" onclick="logout()">Sair</button></li>
 
         </ul>
     </nav>
+
+    <section id="usuarios" class="form-section hidden">
+        <h2>Administração de Usuários</h2>
+        <p>Somente o administrador master pode gerenciar operadores do SIGECEBA.</p>
+        <form id="usuarioForm">
+            <div class="form-row">
+                <div class="form-group"><label for="usuarioNome">Nome *</label><input id="usuarioNome" required maxlength="255"></div>
+                <div class="form-group"><label for="usuarioLogin">Login *</label><input id="usuarioLogin" required maxlength="80" autocomplete="off"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label for="usuarioEmail">E-mail (opcional)</label><input id="usuarioEmail" type="email" maxlength="255"></div>
+                <div class="form-group"><label for="usuarioSenha">Senha inicial (mínimo 12 caracteres) *</label><input id="usuarioSenha" type="password" required minlength="12" autocomplete="new-password"></div>
+            </div>
+            <button class="btn-primary" type="submit">Cadastrar operador</button>
+        </form>
+        <h3>Operadores cadastrados</h3>
+        <div class="table-container"><table><thead><tr><th>Nome</th><th>Login</th><th>E-mail</th><th>Status</th><th>Ações</th></tr></thead><tbody id="usuariosTabela"></tbody></table></div>
+    </section>
 
     <!-- Dashboard -->
     <section id="dashboard" class="form-section">
@@ -82,23 +101,23 @@
                     <input type="text" id="responsavelNome" name="responsavelNome" required>
                 </div>
                 <div class="form-group">
-                    <label for="responsavelCPF">CPF *</label>
-                    <input type="text" id="responsavelCPF" name="responsavelCPF" required>
+                    <label for="responsavelCPF">CPF (opcional)</label>
+                    <input type="text" id="responsavelCPF" name="responsavelCPF">
                 </div>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="responsavelNascimento">Data de Nascimento *</label>
-                    <input type="date" id="responsavelNascimento" name="responsavelNascimento" required>
+                    <label for="responsavelNascimento">Data de Nascimento (opcional)</label>
+                    <input type="date" id="responsavelNascimento" name="responsavelNascimento">
                 </div>
                 <div class="form-group">
                     <label for="responsavelIdade">Idade</label>
                     <input type="number" id="responsavelIdade" name="responsavelIdade" readonly>
                 </div>
                 <div class="form-group">
-                    <label for="responsavelGenero">Gênero *</label>
-                    <select id="responsavelGenero" name="responsavelGenero" required>
+                    <label for="responsavelGenero">Gênero (opcional)</label>
+                    <select id="responsavelGenero" name="responsavelGenero">
                         <option value="">Selecione</option>
                         <option value="masculino">Masculino</option>
                         <option value="feminino">Feminino</option>
@@ -108,20 +127,20 @@
             </div>
 
             <div class="form-group">
-                <label for="responsavelEndereco">Endereço (Rua/Av., Nº, Bairro, Cidade, CEP) *</label>
-                <textarea id="responsavelEndereco" name="responsavelEndereco" rows="2" required></textarea>
+                <label for="responsavelEndereco">Endereço (Rua/Av., Nº, Bairro, Cidade, CEP) (opcional)</label>
+                <textarea id="responsavelEndereco" name="responsavelEndereco" rows="2"></textarea>
             </div>
 
             <div class="form-group">
-                <label for="telefone">Telefone (opcional)</label>
-                <input type="text" id="telefone" name="telefone">
+                <label for="telefone">Telefone *</label>
+                <input type="text" id="telefone" name="telefone" required>
             </div>
 
             <h3>Informações da Família</h3>
             <div class="form-row">
                 <div class="form-group">
-                    <label for="numeroPessoas">Número de pessoas na casa *</label>
-                    <input type="number" id="numeroPessoas" name="numeroPessoas" min="1" required>
+                    <label for="numeroPessoas">Número de pessoas na casa (opcional)</label>
+                    <input type="number" id="numeroPessoas" name="numeroPessoas" min="1">
                 </div>
                 <div class="form-group">
                     <label for="numeroFilhos">Número de filhos</label>
@@ -175,7 +194,7 @@
         <h2>Consultar Famílias Cadastradas</h2>
         <div class="form-row">
             <div class="form-group">
-                <input type="text" id="buscaFamilia" placeholder="Buscar por nome do responsável ou CPF">
+                <input type="text" id="buscaFamilia" placeholder="Buscar por nome, telefone ou CPF">
             </div>
             <div class="form-group">
                 <button type="button" class="btn-primary" onclick="buscarFamilias()">Buscar</button>

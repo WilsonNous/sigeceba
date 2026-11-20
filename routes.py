@@ -1,5 +1,5 @@
 # routes.py
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, session
 import logging
 import os
 
@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 print("✅ 1. Iniciando importação do banco...")
 
 from database import (
+    get_db_cursor,
     init_db,
     get_dashboard_data,
     salvar_familia,
@@ -43,22 +44,41 @@ from utils_auth import login_required
 # APP
 # ==============================
 app = Flask(__name__, template_folder='.')
-app.secret_key = os.getenv("SECRET_KEY", "segredo_muito_importante")
+app.secret_key = os.environ["SECRET_KEY"]
 print("✅ App criado / secret_key OK")
 
 # ==============================
 # INICIALIZAÇÃO DO BANCO
 # ==============================
-print("🔧 Inicializando tabelas...")
-with app.app_context():
-    init_db()
-print("✅ Banco pronto!")
+# Estrutura provisionada previamente na Enzonic.
+# Nunca executar DDL automatico no banco compartilhado com CRM.
+logger.info("Banco compartilhado: criacao automatica de tabelas desabilitada")
 
 # ==============================
 # BLUEPRINT AUTH
 # ==============================
 # Se auth.py tem @auth_bp.route('/login'), vai virar /api/login automaticamente ✅
 app.register_blueprint(auth_bp, url_prefix="/api")
+
+# Seguranca de sessao: usuarios desativados perdem acesso imediatamente.
+@app.before_request
+def validar_sessao_operador():
+    if not session.get("logado") or session.get("role") != "operador":
+        return None
+    try:
+        with get_db_cursor() as cursor:
+            cursor.execute("SELECT ativo FROM cesta_usuarios WHERE id = %s", (session.get("user_id"),))
+            user = cursor.fetchone()
+        if not user or not user["ativo"]:
+            session.clear()
+            return jsonify({"error": "Usuario desativado. Entre novamente."}), 401
+    except Exception:
+        logger.exception("Falha ao verificar sessao de operador")
+        return jsonify({"error": "Nao foi possivel validar a sessao."}), 503
+
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SECURE"] = os.getenv("SESSION_COOKIE_SECURE", "true").lower() == "true"
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 
 # ==============================
 # ROTAS PÚBLICAS
@@ -126,11 +146,7 @@ def cadastrar_familia_route():
 
     required = [
         'responsavelNome',
-        'responsavelCPF',
-        'responsavelNascimento',
-        'responsavelGenero',
-        'responsavelEndereco',
-        'numeroPessoas'
+        'telefone'
     ]
 
     for field in required:
@@ -156,7 +172,7 @@ def registrar_entrega_route():
         if not data.get(field):
             return jsonify({"error": f"Campo obrigatório: {field}"}), 400
 
-    if salvar_entrega(data):
+    if salvar_entrega(data, session.get('user_id') or 0):
         return jsonify({"message": "Entrega registrada com sucesso!"}), 201
 
     return jsonify({"error": "Erro ao registrar entrega"}), 500
