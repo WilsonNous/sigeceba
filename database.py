@@ -2,6 +2,7 @@
 import os
 import pymysql
 import logging
+import ssl
 from contextlib import contextmanager
 
 logging.basicConfig(level=logging.INFO)
@@ -9,14 +10,22 @@ logging.basicConfig(level=logging.INFO)
 # =========================
 # CONFIG DO BANCO (ENV FIRST)
 # =========================
+def required_env(name, *aliases):
+    for key in (name, *aliases):
+        value = os.getenv(key)
+        if value:
+            return value
+    raise RuntimeError(f"Variavel de ambiente obrigatoria ausente: {name}")
+
 DB_CONFIG = {
-    "host": os.getenv("DB_HOST", "127.0.0.1"),
-    "user": os.getenv("DB_USER", "root"),
-    "password": os.getenv("DB_PASSWORD", ""),
-    "db": os.getenv("DB_NAME", ""),
+    "host": required_env("DB_HOST"),
+    "user": required_env("DB_USER"),
+    "password": required_env("DB_PASSWORD", "DB_PASS"),
+    "db": required_env("DB_NAME"),
     "port": int(os.getenv("DB_PORT", "3306")),
     "charset": "utf8mb4",
     "cursorclass": pymysql.cursors.DictCursor,
+    "ssl": ssl.create_default_context(cafile=os.getenv("DB_SSL_CA") or None),
 }
 
 def get_db_connection():
