@@ -1,6 +1,7 @@
 # auth.py
 from flask import Blueprint, request, jsonify, session
 import os
+import logging
 import bcrypt
 
 from database import get_db_cursor  # usa o contextmanager do teu database.py
@@ -10,8 +11,8 @@ auth_bp = Blueprint("auth", __name__)
 # -----------------------------------------------------
 # ADMIN FIXO (fallback / emergência)
 # -----------------------------------------------------
-ADMIN_USER = os.getenv("ADMIN_USER", "Adminis")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "s3cr3ty")  # texto puro mesmo
+ADMIN_USER = os.getenv("ADMIN_USER")
+ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")  # texto puro mesmo
 
 
 def _is_bcrypt_hash(value: str) -> bool:
@@ -84,13 +85,16 @@ def login():
                 "message": "Login bem-sucedido!"
             }), 200
 
-    except Exception as e:
-        # Se o banco falhar, ainda dá pra entrar pelo ADMIN de ambiente (emergência)
-        print(f"❌ Erro ao consultar tabela usuarios: {e}")
+    except Exception:
+        logging.exception("Falha ao consultar usuarios")
+        return jsonify({"status": "error", "message": "Autenticacao temporariamente indisponivel."}), 503
 
     # -----------------------------------------------------
     # 2) Fallback ADMIN (ambiente) — emergência
     # -----------------------------------------------------
+    if not ADMIN_USER or not ADMIN_PASSWORD:
+        return jsonify({'status': 'error', 'message': 'Usuario ou senha invalidos.'}), 401
+
     if username != ADMIN_USER:
         return jsonify({"status": "error", "message": "Usuário inválido."}), 401
 
