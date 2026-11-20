@@ -81,6 +81,25 @@ def init_db():
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     """
 
+    create_responsaveis = """
+    CREATE TABLE IF NOT EXISTS familias_responsaveis (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        id_familia INT NOT NULL,
+        nome_completo VARCHAR(255) NOT NULL,
+        telefone VARCHAR(40) NOT NULL,
+        cpf VARCHAR(14) NULL,
+        data_nascimento DATE NULL,
+        genero VARCHAR(30) NULL,
+        endereco TEXT NULL,
+        data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        UNIQUE KEY uk_responsavel_familia (id_familia),
+        INDEX idx_responsavel_nome (nome_completo),
+        CONSTRAINT fk_responsavel_familia FOREIGN KEY (id_familia)
+            REFERENCES familias_cestas(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+    """
+
     create_membros = """
     CREATE TABLE IF NOT EXISTS familia_membros (
         id INT PRIMARY KEY AUTO_INCREMENT,
@@ -165,6 +184,7 @@ def init_db():
     try:
         with get_db_cursor(commit=True) as cursor:
             cursor.execute(create_familias)
+            cursor.execute(create_responsaveis)
             cursor.execute(create_membros)
             cursor.execute(create_movimento)
             cursor.execute(create_estoque)
@@ -181,75 +201,67 @@ def init_db():
 # FAMÍLIAS / ENTREGAS
 # =========================
 def salvar_familia(data):
-    sql = """
-    INSERT INTO familias_cestas (
-        numero_pessoas, numero_filhos, renda_mensal_familia,
-        beneficios_sociais, condicao_moradia, tipo_moradia,
-        observacoes, necessidades_especificas
-    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-    """
+    """Salva familia e responsavel na mesma transacao."""
+    nome = (data.get("responsavelNome") or "").strip()
+    telefone = (data.get("telefone") or "").strip()
+    if not nome or not telefone:
+        return None
+
     try:
         with get_db_cursor(commit=True) as cursor:
-            cursor.execute(sql, [
-                data.get("numeroPessoas") or 1,
-                data.get("numeroFilhos") or 0,
-                None, None, None, None,
-                f"Responsável: {data.get('responsavelNome')}, "
-                f"CPF: {data.get('responsavelCPF') or ''}, "
-                f"Nascimento: {data.get('responsavelNascimento') or ''}, "
-                f"Gênero: {data.get('responsavelGenero') or ''}, "
-                f"Endereço: {data.get('responsavelEndereco') or ''}, "
-                f"Telefone: {data.get('telefone', '')}",
-                None
-            ])
-            return cursor.lastrowid
-    except Exception as e:
-        logging.error(f"Erro ao salvar família: {e}")
+            cursor.execute("""
+                INSERT INTO familias_cestas (numero_pessoas, numero_filhos)
+                VALUES (%s, %s)
+            """, (data.get("numeroPessoas") or 1, data.get("numeroFilhos") or 0))
+            familia_id = cursor.lastrowid
+            cursor.execute("""
+                INSERT INTO familias_responsaveis
+                (id_familia, nome_completo, telefone, cpf, data_nascimento, genero, endereco)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (
+                familia_id, nome, telefone,
+                (data.get("responsavelCPF") or "").strip() or None,
+                data.get("responsavelNascimento") or None,
+                data.get("responsavelGenero") or None,
+                (data.get("responsavelEndereco") or "").strip() or None
+            ))
+            return familia_id
+    except Exception:
+        logging.exception("Erro ao salvar familia")
         return None
+
 
 def listar_familias(query=None):
     sql = """
-    SELECT f.id, f.numero_pessoas, f.numero_filhos, f.observacoes, f.data_cadastro, f.ativo
-    FROM familias_cestas f
-    WHERE f.ativo = TRUE
+        SELECT f.id, f.numero_pessoas, f.numero_filhos,
+               r.nome_completo AS responsavel_nome, r.cpf, r.telefone
+        FROM familias_cestas f
+        LEFT JOIN familias_responsaveis r ON r.id_familia = f.id
+        WHERE f.ativo = TRUE
     """
     params = []
     if query:
-        sql += " AND f.observacoes LIKE %s"
-        params.append(f"%{query}%")
-    sql += " ORDER BY f.data_cadastro DESC"
+        sql += """ AND (r.nome_completo LIKE %s OR r.telefone LIKE %s
+                      OR r.cpf LIKE %s OR CAST(f.id AS CHAR) = %s)"""
+        params.extend([f"%{query}%", f"%{query}%", f"%{query}%", str(query)])
+    sql += " ORDER BY f.data_cadastro DESC, f.id DESC"
 
     try:
         with get_db_cursor() as cursor:
             cursor.execute(sql, params)
-            familias = []
-            for row in cursor.fetchall():
-                nome = "Nome não registrado"
-                cpf = "—"
-                telefone = "—"
-
-                if row.get("observacoes"):
-                    for part in row["observacoes"].split(", "):
-                        if part.startswith("Responsável:"):
-                            nome = part.replace("Responsável: ", "").strip()
-                        elif part.startswith("CPF:"):
-                            cpf = part.replace("CPF: ", "").strip()
-                        elif part.startswith("Telefone:"):
-                            telefone = part.replace("Telefone: ", "").strip()
-
-                familias.append({
-                    "id": row["id"],
-                    "responsavel_nome": nome,
-                    "cpf": cpf,
-                    "telefone": telefone,
-                    "numero_pessoas": row["numero_pessoas"],
-                    "numero_filhos": row["numero_filhos"],
-                    "ultimaEntrega": "—",
-                })
-            return familias
-    except Exception as e:
-        logging.error(f"Erro ao listar famílias: {e}")
+            return [{
+                "id": row["id"],
+                "responsavel_nome": row["responsavel_nome"] or "Nome não registrado",
+                "cpf": row["cpf"] or "—",
+                "telefone": row["telefone"] or "—",
+                "numero_pessoas": row["numero_pessoas"],
+                "numero_filhos": row["numero_filhos"],
+                "ultimaEntrega": "—",
+            } for row in cursor.fetchall()]
+    except Exception:
+        logging.exception("Erro ao listar familias")
         return []
+
 
 def salvar_entrega(data):
     sql = """
