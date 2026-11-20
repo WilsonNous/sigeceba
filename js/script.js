@@ -22,6 +22,7 @@ function showSection(sectionId) {
 
   // Carregar dados específicos ao abrir a seção
   if (sectionId === 'dashboard') carregarDashboard();
+  if (sectionId === 'usuarios') carregarUsuarios();
   if (sectionId === 'entregas') carregarFamiliasSelect();
   if (sectionId === 'consulta') buscarFamilias();
   if (sectionId === 'historico') {
@@ -693,3 +694,76 @@ function initIdleLogout() {
 }
 
 document.addEventListener("DOMContentLoaded", initIdleLogout);
+
+
+// Administracao exclusiva do master
+async function inicializarPermissoes() {
+  try {
+    const r = await fetch('/api/me');
+    if (!r.ok) return;
+    const u = await r.json();
+    const btn = byId('navUsuarios');
+    if (btn) btn.style.display = u.role === 'master' ? '' : 'none';
+  } catch (e) { console.error('Falha ao consultar perfil', e); }
+}
+async function carregarUsuarios() {
+  const r = await fetch('/api/usuarios');
+  if (!r.ok) { alert('Acesso negado ou erro ao consultar usuários.'); return; }
+  const users = await r.json();
+  const tbody = byId('usuariosTabela');
+  if (!tbody) return;
+  tbody.replaceChildren();
+  for (const u of users) {
+    const tr = document.createElement('tr');
+    for (const value of [u.nome, u.login, u.email || '—', u.ativo ? 'Ativo' : 'Inativo']) {
+      const td = document.createElement('td');
+      td.textContent = value;
+      tr.appendChild(td);
+    }
+    const td = document.createElement('td');
+    const toggle = document.createElement('button');
+    toggle.type = 'button';
+    toggle.className = 'btn-secondary';
+    toggle.textContent = u.ativo ? 'Desativar' : 'Reativar';
+    toggle.onclick = () => alterarUsuario(u.id, {ativo: !Boolean(u.ativo)});
+    td.appendChild(toggle);
+    const reset = document.createElement('button');
+    reset.type = 'button';
+    reset.className = 'btn-secondary';
+    reset.textContent = 'Redefinir senha';
+    reset.onclick = async () => {
+      const senha = prompt('Nova senha (mínimo 12 caracteres):');
+      if (senha !== null) await alterarUsuario(u.id, {senha});
+    };
+    td.appendChild(reset);
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+  }
+}
+async function alterarUsuario(id, data) {
+  const r = await fetch('/api/usuarios/' + id, {
+    method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
+  });
+  const result = await r.json();
+  if (!r.ok) { alert(result.error || 'Erro ao atualizar usuário.'); return; }
+  await carregarUsuarios();
+}
+const usuarioForm = byId('usuarioForm');
+if (usuarioForm) usuarioForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  const data = {
+    nome: byId('usuarioNome').value.trim(),
+    login: byId('usuarioLogin').value.trim(),
+    email: byId('usuarioEmail').value.trim(),
+    senha: byId('usuarioSenha').value
+  };
+  const r = await fetch('/api/usuarios', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
+  });
+  const result = await r.json();
+  if (!r.ok) { alert(result.error || 'Erro ao cadastrar usuário.'); return; }
+  usuarioForm.reset();
+  await carregarUsuarios();
+  alert('Operador cadastrado com sucesso.');
+});
+inicializarPermissoes();
